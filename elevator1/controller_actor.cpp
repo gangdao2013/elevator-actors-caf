@@ -17,14 +17,6 @@ using namespace elevator;
 
 namespace controller
 {
-	struct controller_state
-	{
-		strong_actor_ptr lift;
-		strong_actor_ptr passenger;
-	};
-
-	const int FLOOR_MIN = 0;
-	const int FLOOR_MAX = 10;
 
 	behavior controller_actor(stateful_actor<controller_state>* self)
 	{

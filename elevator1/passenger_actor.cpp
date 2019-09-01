@@ -7,7 +7,7 @@
 #include "string_util.hpp"
 
 #include "elevator.hpp"
-#include "controller.hpp"
+#include "controller_actor.hpp"
 #include "passenger_actor.hpp"
 #include "passenger_fsm.hpp"
 #include "passenger_repl.hpp"
@@ -65,10 +65,8 @@ namespace passenger
 	{
 		assert(this->state_ != nullptr);
 
-		passenger_state * next_state = this->state_->handle_event(*this, event);
-		this->state_->on_exit(*this);
-		this->state_ = next_state;
-		this->state_->on_enter(*this);
+		state_->handle_event(*this, event);
+
 	}
 
 	void passenger_actor::quit()
@@ -88,6 +86,7 @@ namespace passenger
 				this->controller = nullptr;
 			}
 		});
+		raise_event(passenger_event{ *this, passenger_event_type::initialised_ok });
 		return true;
 	}
 
@@ -101,7 +100,7 @@ namespace passenger
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
 
-		bool result = false;
+		bool connected = false;
 
 		request(mm, infinite, connect_atom::value, controller_host, controller_port)
 			.await
@@ -123,7 +122,7 @@ namespace passenger
 						auto controller_hdl = actor_cast<actor>(controller);
 						this->monitor(controller_hdl);
 						this->send(controller_hdl, elevator::register_passenger_atom::value, this);
-						result = true;
+						connected = true;
 				},
 				[&](const error& err) {
 					aout(this) << R"(*** cannot connect to ")" << controller_host << R"(":)"
@@ -131,7 +130,13 @@ namespace passenger
 
 				}
 			);
-		return result;
+	
+		if(connected)
+			raise_event(passenger_event{ *this, passenger_event_type::connected_ok });
+		else
+			raise_event(passenger_event{ *this, passenger_event_type::connection_fail });
+
+		return connected;
 	}
 
 	//auto repl = self->spawn(passenger_repl);
@@ -145,10 +150,13 @@ namespace passenger
 		return true;
 	}
 
-
-
-
-
-
+	void passenger_actor::set_state(std::shared_ptr<passenger_state> state)
+	{
+		//assert(this->state_ != nullptr);
+		if(this->state_)
+			this->state_->on_exit(*this);
+		this->state_ = state;
+		this->state_->on_enter(*this);
+	}
 
 }

@@ -9,7 +9,7 @@
 #include "string_util.hpp"
 
 #include "elevator.hpp"
-#include "controller.hpp"
+#include "controller_actor.hpp"
 #include "passenger_actor.hpp"
 
 using namespace caf;

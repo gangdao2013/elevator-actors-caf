@@ -14,8 +14,10 @@ namespace passenger
 		friend class passenger_fsm;
 		friend class initialising_state;
 		friend class disconnected_state;
+		friend class connecting_state;
 		friend class in_lobby_state;
 		friend class in_elevator_state;
+		friend class awaiting_instruction_state;
 		friend class quitting_state;
 
 	public:
@@ -25,6 +27,7 @@ namespace passenger
 		{ 
 			//cfg_ = cfg ;
 			//current_state = &passenger_actor::initialising;
+			set_state(passenger_state::initalising);
 		}
 
 		behavior make_behavior() override;
@@ -41,7 +44,7 @@ namespace passenger
 		int current_floor = 0;
 		int called_floor = 0;
 
-		passenger_state *state_ = nullptr;
+		std::shared_ptr<passenger_state> state_;
 
 		//// states
 		//void initialising(const passenger_event& e);
@@ -57,6 +60,7 @@ namespace passenger
 		bool connect();
 		void quit();
 		bool get_instruction();
+		void set_state(std::shared_ptr<passenger_state> state);
 	};
 
 

@@ -11,6 +11,11 @@ using namespace caf;
 
 namespace elevator
 {
+
+	const int FLOOR_MIN = 0;
+	const int FLOOR_MAX = 10;
+
+
 	using call_atom = atom_constant<atom("call")>;
 	using register_elevator_atom = atom_constant<atom("r_e")>;
 	using register_passenger_atom = atom_constant<atom("r_p_a")>;

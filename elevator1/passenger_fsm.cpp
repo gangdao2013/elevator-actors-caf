@@ -7,44 +7,68 @@
 
 namespace passenger {
 
+	std::shared_ptr<initialising_state> passenger_state::initalising(new initialising_state);
+	std::shared_ptr<disconnected_state> passenger_state::disconnected(new disconnected_state);
+	std::shared_ptr<connecting_state> passenger_state::connecting(new connecting_state);
+	std::shared_ptr<in_lobby_state> passenger_state::in_lobby(new in_lobby_state);
+	std::shared_ptr<in_elevator_state> passenger_state::in_elevator(new in_elevator_state);
+	std::shared_ptr<awaiting_instruction_state> passenger_state::awaiting_instruction(new awaiting_instruction_state);
+	std::shared_ptr<quitting_state> passenger_state::quitting(new quitting_state);
+
 	void initialising_state::on_enter(passenger_actor& actor)
 	{
-		if(actor.initialise())
-			this->handle_event(actor, passenger_event{ actor, passenger_event_type::initialised_ok });
-
+		actor.initialise();
 	}
-
-	passenger_state* initialising_state::handle_event(passenger_actor& actor, const passenger_event &event)
+	void initialising_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		if (event.event_type == passenger_event_type::initialised_ok)
-			return &passenger_state::disconnected;
+			actor.set_state(passenger_state::disconnected);
 		else
-			return this;	
+			actor.set_state(passenger_state::quitting);
 	}
 
 	void disconnected_state::on_enter(passenger_actor& actor)
 	{
-		if(actor.connect())
-			this->handle_event(actor, passenger_event{ actor, passenger_event_type::connected_ok });
-		else
-			this->handle_event(actor, passenger_event{ actor, passenger_event_type::connection_fail});
+		actor.get_instruction();
 	}
 
-	passenger_state* disconnected_state::handle_event(passenger_actor& actor, const passenger_event &event)
+	void disconnected_state::handle_event(passenger_actor& actor, const passenger_event& event)
+	{
+		switch (event.event_type)
+		{
+		case passenger_event_type::connect:
+			actor.set_state(passenger_state::connecting);
+			break;
+		case passenger_event_type::quit:
+			actor.set_state(passenger_state::quitting);
+			break;
+		default:
+			actor.set_state(passenger_state::awaiting_instruction);
+			break;
+		}
+	}
+
+	void connecting_state::on_enter(passenger_actor& actor)
+	{
+		actor.connect();
+	}
+
+	void connecting_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		switch (event.event_type )
 		{
 		case passenger_event_type::connected_ok:
-			return &passenger_state::in_lobby;
+			actor.set_state(passenger_state::in_lobby);
 			break;
 		case passenger_event_type::connection_fail:
-			return &passenger_state::awaiting_instruction;
+			actor.set_state(passenger_state::awaiting_instruction);
 			break;
 		case passenger_event_type::quit:
-			return &passenger_state::quitting;
+			actor.set_state(passenger_state::quitting);
 			break;
 		default:
-			return this;
+			actor.set_state(passenger_state::awaiting_instruction);
+			break;
 		}
 	}
 
@@ -53,21 +77,21 @@ namespace passenger {
 		actor.get_instruction();
 	}
 
-	passenger_state* in_lobby_state::handle_event(passenger_actor& actor, const passenger_event &event)
+	void in_lobby_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		switch (event.event_type)
 		{
 		case passenger_event_type::connection_fail:
-			return &passenger_state::awaiting_instruction;
+			actor.set_state(passenger_state::awaiting_instruction);
 			break;
 		case passenger_event_type::elevator_arrived:
-			return &passenger_state::in_elevator;
+			actor.set_state(passenger_state::in_elevator);
 			break;
 		case passenger_event_type::quit:
-			return &passenger_state::quitting;
+			actor.set_state(passenger_state::quitting);
 			break;
 		default:
-			return this;
+			break;
 		}
 	}
 
@@ -75,19 +99,33 @@ namespace passenger {
 	{
 	}
 
-	passenger_state* in_elevator_state::handle_event(passenger_actor& actor, const passenger_event &event)
+	void in_elevator_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
-		return this;
+		return;
 	}
 
 	void awaiting_instruction_state::on_enter(passenger_actor& actor)
 	{
-
+		actor.get_instruction();
 	}
 
-	passenger_state* awaiting_instruction_state::handle_event(passenger_actor& actor, const passenger_event &event)
+	void awaiting_instruction_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
-		return this;
+		switch (event.event_type)
+		{
+		case passenger_event_type::connect:
+			actor.set_state(passenger_state::disconnected);
+			break;
+		case passenger_event_type::call:
+			actor.set_state(passenger_state::in_lobby);
+			break;
+		case passenger_event_type::quit:
+			actor.set_state(passenger_state::quitting);
+			break;
+		default:
+			actor.get_instruction();
+			break;
+		}
 	}
 
 	void quitting_state::on_enter(passenger_actor& actor)
