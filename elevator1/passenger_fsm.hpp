@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 //#include "passenger_actor.hpp"
 
 namespace passenger
@@ -29,7 +30,7 @@ namespace passenger
 	//    |                      V                          |
 	//    |               +-------------+ {DOWN controller} |
 	//    +---------------|   waiting   |-------------------+
-	//                    | for instruction|<------+       
+	//                    | in lobby    |<---------+       
 	//	                  +-------------+          |
 	//	                        |                  |
 	//       {lift arrives}     |                  | {arrived at destination/disembark}
@@ -78,6 +79,7 @@ namespace passenger
 		virtual void on_enter(passenger_actor& actor) {};
 		virtual void on_exit(passenger_actor& actor) {};
 		virtual void handle_event(passenger_actor& actor, const passenger_event& event) {};
+		virtual std::string get_state_name() { return "passenger_state"; };
 
 		static std::shared_ptr<initialising_state> initalising;
 		static std::shared_ptr<disconnected_state> disconnected;
@@ -92,41 +94,48 @@ namespace passenger
 	{
 		virtual void on_enter(passenger_actor& actor) override;
 		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "initialising"; };
 	};
 
 	class disconnected_state : public passenger_state
 	{
 		void on_enter(passenger_actor& actor) override;
 		virtual void  handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "disconnected"; };
 	};
 
 	class connecting_state : public passenger_state
 	{
 		void on_enter(passenger_actor& actor) override;
 		virtual void  handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "connecting"; };
 	};
 
 	class in_lobby_state : public passenger_state
 	{
 		void on_enter(passenger_actor& actor) override;
 		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "in_lobby"; };
 	};
 
 	class in_elevator_state : public passenger_state
 	{
 		void on_enter(passenger_actor& actor) override;
 		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "in_elevator"; };
 	};
 
 	class awaiting_instruction_state : public passenger_state
 	{
 		void on_enter(passenger_actor& actor) override;
 		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual std::string get_state_name() override { return "awaiting_instruction"; };
 	};
 
 	class quitting_state : public passenger_state
 	{
 		virtual void on_enter(passenger_actor& actor) override;
+		virtual std::string get_state_name() override { return "quitting"; };
 	};
 
 

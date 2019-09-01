@@ -5,8 +5,6 @@
 #include <string>
 #include <optional>
 
-using namespace std;
-
 namespace string_util
 {
 	struct splitter
@@ -40,11 +38,11 @@ namespace string_util
 	}
 
 	// trim leading & trailing spaces
-	string trim(std::string s);
+	std::string trim(std::string s);
 
 	// convert string to int
 	// tries to convert `str` to an int
-	std::optional<int> to_integer(const string& str);
+	std::optional<int> to_integer(const std::string& str);
 
 }
 

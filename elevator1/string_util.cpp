@@ -3,6 +3,8 @@
 #include <functional>
 #include "string_util.hpp"
 
+using namespace std;
+
 namespace string_util
 {
 

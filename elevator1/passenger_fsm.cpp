@@ -29,7 +29,7 @@ namespace passenger {
 
 	void disconnected_state::on_enter(passenger_actor& actor)
 	{
-		actor.get_instruction();
+		
 	}
 
 	void disconnected_state::handle_event(passenger_actor& actor, const passenger_event& event)
@@ -43,7 +43,7 @@ namespace passenger {
 			actor.set_state(passenger_state::quitting);
 			break;
 		default:
-			actor.set_state(passenger_state::awaiting_instruction);
+			// stay disconnected
 			break;
 		}
 	}
@@ -61,28 +61,31 @@ namespace passenger {
 			actor.set_state(passenger_state::in_lobby);
 			break;
 		case passenger_event_type::connection_fail:
-			actor.set_state(passenger_state::awaiting_instruction);
+			actor.set_state(passenger_state::disconnected);
 			break;
 		case passenger_event_type::quit:
 			actor.set_state(passenger_state::quitting);
 			break;
 		default:
-			actor.set_state(passenger_state::awaiting_instruction);
+			actor.set_state(passenger_state::disconnected);
 			break;
 		}
 	}
 
 	void in_lobby_state::on_enter(passenger_actor& actor)
 	{
-		actor.get_instruction();
+		//actor.get_instruction();
 	}
 
 	void in_lobby_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		switch (event.event_type)
 		{
+		case passenger_event_type::connect:
+			actor.set_state(passenger_state::connecting);
+			break;
 		case passenger_event_type::connection_fail:
-			actor.set_state(passenger_state::awaiting_instruction);
+			actor.set_state(passenger_state::disconnected);
 			break;
 		case passenger_event_type::elevator_arrived:
 			actor.set_state(passenger_state::in_elevator);
@@ -101,12 +104,22 @@ namespace passenger {
 
 	void in_elevator_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
-		return;
+		switch (event.event_type)
+		{
+		case passenger_event_type::destination_arrived:
+			actor.set_state(passenger_state::in_lobby);
+			break;
+		case passenger_event_type::quit:
+			actor.set_state(passenger_state::quitting);
+			break;
+		default:
+			break;
+		}
 	}
 
 	void awaiting_instruction_state::on_enter(passenger_actor& actor)
 	{
-		actor.get_instruction();
+		//actor.get_instruction();
 	}
 
 	void awaiting_instruction_state::handle_event(passenger_actor& actor, const passenger_event &event)
@@ -123,7 +136,7 @@ namespace passenger {
 			actor.set_state(passenger_state::quitting);
 			break;
 		default:
-			actor.get_instruction();
+			//actor.get_instruction();
 			break;
 		}
 	}

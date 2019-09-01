@@ -56,10 +56,10 @@ namespace passenger
 
 		//
 
-		bool initialise();
-		bool connect();
+		void initialise();
+		void connect();
 		void quit();
-		bool get_instruction();
+		//bool get_instruction();
 		void set_state(std::shared_ptr<passenger_state> state);
 	};
 

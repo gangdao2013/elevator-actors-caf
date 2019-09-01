@@ -25,6 +25,7 @@ namespace elevator
 	using destination_arrived_atom = atom_constant<atom("d_a")>;
 	using connect_to_controller_atom = atom_constant<atom("c_t_c")>;
 	using get_instructions_atom = atom_constant<atom("g_i")>;
+	using get_state_name_atom = atom_constant<atom("g_s")>;
 
 	using quit_atom = atom_constant<atom("quit")>;
 
@@ -40,9 +41,9 @@ namespace elevator
 			opt_group{ custom_options_, "global" }
 				.add(port, "port,p", "set controller port")
 				.add(host, "host,H", "set controller host (ignored in controller mode, assumed to be localhost)")
-				.add(controller_mode, "controller,c", "enable controller mode")
-				.add(passenger_mode, "passenger,p", "enable passenger mode")
-				.add(passenger_mode, "elevator,e", "enable elevator mode")
+				.add(controller_mode, "controller,C", "enable controller mode")
+				.add(passenger_mode, "passenger,P", "enable passenger mode")
+				.add(passenger_mode, "elevator,E", "enable elevator mode")
 				;
 		}
 	};

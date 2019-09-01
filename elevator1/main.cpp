@@ -11,8 +11,6 @@ using namespace caf;
 
 void start_passenger(actor_system& system, const elevator::config& cfg)
 {
-	passenger::passenger_repl::usage();
-
 	auto passenger = system.spawn<passenger::passenger_actor>();
 
 	if (!cfg.host.empty() && cfg.port > 0)
@@ -22,9 +20,11 @@ void start_passenger(actor_system& system, const elevator::config& cfg)
 		<< R"(please use "connect <host> <port>" before trying to use the elevator)"
 		<< std::endl;
 
+	passenger::passenger_repl repl(system, passenger);
+	repl.start_repl(); // will run until quit entered
 
 	auto self = scoped_actor{ system };
-	self->wait_for(passenger);
+	self->wait_for(passenger); // will block until passenger dies
 }
 
 void start_controller(actor_system& system, const elevator::config& cfg) {
