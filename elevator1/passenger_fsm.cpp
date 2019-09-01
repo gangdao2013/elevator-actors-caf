@@ -14,7 +14,7 @@ namespace passenger {
 
 	}
 
-	passenger_state* initialising_state::handle_event(const passenger_actor& actor, const passenger_event &event)
+	passenger_state* initialising_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		if (event.event_type == passenger_event_type::initialised_ok)
 			return &passenger_state::disconnected;
@@ -30,7 +30,7 @@ namespace passenger {
 			this->handle_event(actor, passenger_event{ actor, passenger_event_type::connection_fail});
 	}
 
-	passenger_state* disconnected_state::handle_event(const passenger_actor& actor, const passenger_event &event)
+	passenger_state* disconnected_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		switch (event.event_type )
 		{
@@ -53,7 +53,7 @@ namespace passenger {
 		actor.get_instruction();
 	}
 
-	passenger_state* in_lobby_state::handle_event(const passenger_actor& actor, const passenger_event &event)
+	passenger_state* in_lobby_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		switch (event.event_type)
 		{
@@ -75,7 +75,7 @@ namespace passenger {
 	{
 	}
 
-	passenger_state* in_elevator_state::handle_event(const passenger_actor& actor, const passenger_event &event)
+	passenger_state* in_elevator_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		return this;
 	}
@@ -85,7 +85,7 @@ namespace passenger {
 
 	}
 
-	passenger_state* awaiting_instruction_state::handle_event(const passenger_actor& actor, const passenger_event &event)
+	passenger_state* awaiting_instruction_state::handle_event(passenger_actor& actor, const passenger_event &event)
 	{
 		return this;
 	}

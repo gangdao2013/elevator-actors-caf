@@ -74,9 +74,9 @@ namespace passenger
 	{
 	public:
 		virtual ~passenger_state() {};
-		virtual void on_enter(const passenger_actor& actor) {};
-		virtual void on_exit(const passenger_actor& actor) {};
-		virtual passenger_state* handle_event(const passenger_actor &actor, const passenger_event &event) {};
+		virtual void on_enter(passenger_actor& actor) {};
+		virtual void on_exit(passenger_actor& actor) {};
+		virtual passenger_state* handle_event(passenger_actor &actor, const passenger_event &event) {};
 
 		static initialising_state initalising;
 		static disconnected_state disconnected;
@@ -88,37 +88,37 @@ namespace passenger
 
 	class initialising_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
-		virtual passenger_state* handle_event(const passenger_actor& actor, const passenger_event &event);
+		void on_enter(passenger_actor& actor) override;
+		passenger_state* handle_event(passenger_actor& actor, const passenger_event &event) override;
 	};
 
 	class disconnected_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
-		virtual passenger_state* handle_event(const passenger_actor& actor, const passenger_event &event);
+		virtual void on_enter(passenger_actor& actor) override;
+		virtual passenger_state* handle_event(passenger_actor& actor, const passenger_event &event) override;
 	};
 
 	class in_lobby_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
-		virtual passenger_state* handle_event(const passenger_actor& actor, const passenger_event &event);
+		virtual void on_enter(passenger_actor& actor) override;
+		virtual passenger_state* handle_event(passenger_actor& actor, const passenger_event &event) override;
 	};
 
 	class in_elevator_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
-		virtual passenger_state* handle_event(const passenger_actor& actor, const passenger_event &event);
+		virtual void on_enter(passenger_actor& actor) override;
+		virtual passenger_state* handle_event(passenger_actor& actor, const passenger_event &event) override;
 	};
 
 	class awaiting_instruction_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
-		virtual passenger_state* handle_event(const passenger_actor& actor, const passenger_event &event);
+		virtual void on_enter(passenger_actor& actor) override;
+		virtual passenger_state* handle_event(passenger_actor& actor, const passenger_event &event) override;
 	};
 
 	class quitting_state : public passenger_state
 	{
-		virtual void on_enter(passenger_actor& actor);
+		virtual void on_enter(passenger_actor& actor) override;
 	};
 
 }
