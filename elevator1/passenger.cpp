@@ -21,6 +21,39 @@ using namespace elevator;
 namespace passenger
 {
 
+	behavior passenger_actor::make_behavior()
+	{
+		return {
+			[=](connect_to_controller_atom, const std::string& host, uint16_t port) {
+				aout(this) << "\npassenger: connect_atom received" << endl;
+				//connecting(this, host, port);
+			},
+				[=](elevator::connect_to_controller_atom) { 
+				aout(this) << "\nconnecting" << endl; 
+				//get_instr(); 
+			},
+			[=](elevator::call_atom, int to_floor) 
+			{ 
+				aout(this) << "\ncalling" << endl;
+				//get_instr();
+			},
+			[=](elevator::quit_atom) 
+			{
+				anon_send_exit(this, exit_reason::user_shutdown); 
+			},
+			[=](destination_arrived_atom)
+			{
+				aout(this) << "\npassenger: destination_arrived_atom received" << endl;
+				//self->become(waiting_for_instruction(self));
+				//waiting_for_instruction(self);
+			}
+		};
+	}
+
+
+
+
+
 	// State transition for the passenger for connecting to the elevator controller, making calls, in transit, etc:
 	//
 	//                    +-------------+
@@ -54,7 +87,8 @@ namespace passenger
 	//                    | in transit  |----------+
 	//                    +-------------+
 
-		// the client queues pending tasks
+
+
 	struct state {
 		strong_actor_ptr current_controller;
 		strong_actor_ptr repl;
@@ -63,13 +97,27 @@ namespace passenger
 		int called_floor = 0;
 	};
 
-	void passenger_usage() {
-		cout << "Usage:" << endl
-			<< "  quit                  : terminates the program\n" //<< endl
-			<< "  connect <host> <port> : connects to a (remote) lift controller\n" //<< endl
-			<< "  f <to>                : call elevator from current floor to floor <to> (0 is ground floor)"s << std::endl
-			;
-	};
+	// starting point of our passenger FSM
+	void passenger_actor::initialising()
+	{
+
+		// transition to `unconnected` on elevator controller failure/shutdown
+		// set the handler if we lose connection to elevator controller 
+		set_down_handler([=](const down_msg& dm) {
+			if (dm.source == controller) {
+				aout(this) << "\npassenger: lost connection to elevator controller, please reconnect or quit" << endl;
+				controller = nullptr;
+				//become(unconnected(self));
+				// transition to unconnected
+			}
+			});
+	}
+
+	void Initialising::entry()
+	{
+	}
+
+
 
 	// prototype definition for unconnected state
 	behavior unconnected(stateful_actor<state>* self);
@@ -90,23 +138,7 @@ namespace passenger
 	behavior passenger_repl(event_based_actor* self);
 
 
-	// starting point of our passenger FSM
-	behavior init(stateful_actor<state>* self)
-	{
 
-		// transition to `unconnected` on elevator controller failure/shutdown
-		// set the handler if we lose connection to elevator controller 
-		self->set_down_handler([=](const down_msg& dm) {
-			if (dm.source == self->state.current_controller) {
-				aout(self) << "\npassenger: lost connection to elevator controller, please reconnect or quit" << endl;
-				self->state.current_controller = nullptr;
-				self->become(unconnected(self));
-			}
-			});
-
-		// now transition to 'unconnected'
-		return unconnected(self);
-	}
 
 	// unconnected from elevator controller, waiting for message to 'connect'
 	behavior unconnected(stateful_actor<state>* self)
@@ -208,97 +240,7 @@ namespace passenger
 	}
 
 	//behavior passenger_repl(actor_system& system, const config& cfg, const actor& passenger)
-	behavior passenger_repl(event_based_actor* self) //, const actor &passenger)
-	{
 
-
-		//auto current_floor = [&]() -> int {
-		//	auto self = scoped_actor { system };
-		//	self->request(passenger, infinite, elevator::get_current_passenger_floor_atom::value).receive(
-		//		[&](int floor) {return floor; },
-		//		[&](error& err) { aout(self) << "error: " << self->system().render(err) << endl; return 0; }
-		//	);
-		//};
-		auto get_next_instruction = [&](int floor) -> caf::message
-		{
-
-			bool done = false;
-
-			// defining the handler outside the loop is more efficient as it avoids
-			// re-creating the same object over and over again
-			message_handler eval
-			{
-				[&](const string& cmd) -> caf::optional<message>
-				{
-					if (cmd != "quit")
-						return {};
-					done = true;
-					return make_message(quit_atom::value);
-				},
-				[&](string& arg0, string& arg1, string& arg2) -> caf::optional<message>
-				{
-					if (arg0 == "connect")
-					{
-						char* end = nullptr;
-						auto lport = strtoul(arg2.c_str(), &end, 10);
-						if (end != arg2.c_str() + arg2.size())
-						{
-							cout << R"(")" << arg2 << R"(" is not an unsigned integer)" << endl;
-							return {};
-						}
-						else if (lport > std::numeric_limits<uint16_t>::max())
-						{
-							cout << R"(")" << arg2 << R"(" > )" << std::numeric_limits<uint16_t>::max() << endl;
-							return {};
-						}
-						else
-							return make_message(connect_to_controller_atom::value, arg1, lport);
-					}
-					return {};
-				},
-				[&](string& arg0, string& arg1) -> caf::optional<message>
-				{
-					if (arg0 == "f")
-					{
-						auto to_floor = string_util::to_integer(arg1);
-						if (to_floor.has_value())
-						{
-							//self->state.called_floor = to_floor; // .value();
-							//cout << "\nCalling elevator from floor: " << self->state.current_floor << " to floor: "; // << to_floor.value() << endl;
-							//self->send(self->state.current_controller, elevator::call_atom::value, self, self->state.current_floor, self->state.called_floor);
-							//self->become(waiting_for_elevator);
-							return make_message(call_atom::value, to_floor.value());
-						}
-					}
-					return {};
-				}
-			};
-
-			string line;
-			//int floor = current_floor();
-			cout << "\nf " << floor << "> " << endl;
-			while (!done)
-			{
-				std::getline(std::cin, line);
-				line = string_util::trim(std::move(line)); // ignore leading and trailing whitespaces
-				std::vector<string> words;
-				split(words, line, is_any_of(" "), token_compress_on);
-
-				auto result = message_builder(words.begin(), words.end()).apply(eval);
-
-				if (!result || result.value().size() == 0)
-					passenger_usage();
-				else
-					return result.value();
-				cout << "\nf " << floor << "> " << endl;
-			}
-		};
-
-		return
-		{
-			[&](elevator::get_instructions_atom, int current_floor) -> message {return get_next_instruction(current_floor); }
-		};
-	}
 
 	void start_passenger(actor_system& system, const elevator::config& cfg)
 	{
@@ -335,5 +277,9 @@ namespace passenger
 		//	<< R"(please use "connect <host> <port>" before using the elevator)"
 		//	<< endl;
 	}
+
+
+
+
 
 }
