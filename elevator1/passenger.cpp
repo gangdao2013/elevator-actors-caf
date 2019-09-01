@@ -50,6 +50,98 @@ namespace passenger
 		};
 	}
 
+	void passenger_actor::handle_event(const passenger_event& event)
+	{
+		if (this->current_state)
+			(this->*current_state)(event);
+	}
+
+	void passenger_actor::initialising(const passenger_event& e)
+	{
+		// transition to `unconnected` on elevator controller failure/shutdown
+		// set the handler if we lose connection to elevator controller 
+		set_down_handler([=](const down_msg& dm) {
+			if (dm.source == controller) {
+				aout(this) << "\npassenger: lost connection to elevator controller, please reconnect or quit" << endl;
+				controller = nullptr;
+				//become(unconnected(self));
+				// transition to unconnected
+			}
+			});
+
+		current_state = &passenger_actor::disconnected;
+	}
+
+	void passenger_actor::disconnected(const passenger_event& e)
+	{
+		if (e.event_type == passenger_event_type::connect)
+		{
+			if (connect()) {
+				current_state = &passenger_actor::connected;
+			}
+		}
+	}
+
+
+	bool passenger_actor::connect()
+	{
+
+		//stateful_actor<state>* self, const std::string& host, uint16_t port
+		// make sure we are not pointing to an old controller
+		controller = nullptr;
+
+		// use request().await() to suspend regular behavior until MM responded
+		auto mm = system().middleman().actor_handle();
+		auto host = cfg_.host;
+		auto port = cfg_.port;
+
+		bool result = false;
+
+		request(mm, infinite, connect_atom::value, host, port)
+			.await(
+				[&](const node_id&, strong_actor_ptr controller,
+					const std::set<std::string>& ifs) {
+						if (!controller) {
+							aout(this) << R"(*** no controller found at ")" << host << R"(":)"
+								<< port << endl;
+							return;
+						}
+						if (!ifs.empty()) {
+							aout(this) << R"(*** typed actor found at ")" << host << R"(":)"
+								<< port << ", but expected an untyped actor " << endl;
+							return;
+						}
+						aout(this) << "*** successfully connected to controller" << endl;
+						this->controller = controller;
+						auto controller_hdl = actor_cast<actor>(controller);
+						this->monitor(controller_hdl);
+						this->send(controller_hdl, elevator::register_passenger_atom::value, this);
+						//self->become(waiting_for_instruction(self));
+						//waiting_for_instruction(self);
+						result = true;
+				},
+				[&](const error& err) {
+					aout(this) << R"(*** cannot connect to ")" << host << R"(":)"
+						<< port << " => " << this->system().render(err) << endl;
+					//self->become(unconnected(self));
+				}
+				);
+		return result;
+	}
+
+
+	void passenger_actor::connected(const passenger_event& e)
+	{
+	}
+
+	void passenger_actor::in_lobby(const passenger_event& e)
+	{
+	}
+
+	void passenger_actor::in_elevator(const passenger_event& e)
+	{
+	}
+
 
 
 
@@ -88,34 +180,6 @@ namespace passenger
 	//                    +-------------+
 
 
-
-	struct state {
-		strong_actor_ptr current_controller;
-		strong_actor_ptr repl;
-		//const actor& repl;
-		int current_floor = 0;
-		int called_floor = 0;
-	};
-
-	// starting point of our passenger FSM
-	void passenger_actor::initialising()
-	{
-
-		// transition to `unconnected` on elevator controller failure/shutdown
-		// set the handler if we lose connection to elevator controller 
-		set_down_handler([=](const down_msg& dm) {
-			if (dm.source == controller) {
-				aout(this) << "\npassenger: lost connection to elevator controller, please reconnect or quit" << endl;
-				controller = nullptr;
-				//become(unconnected(self));
-				// transition to unconnected
-			}
-			});
-	}
-
-	void Initialising::entry()
-	{
-	}
 
 
 
@@ -156,43 +220,7 @@ namespace passenger
 		};
 	}
 
-	void connecting(stateful_actor<state>* self, const std::string& host, uint16_t port)
-	{
-		// make sure we are not pointing to an old controller
-		self->state.current_controller = nullptr;
 
-		// use request().await() to suspend regular behavior until MM responded
-		auto mm = self->system().middleman().actor_handle();
-
-		self->request(mm, infinite, connect_atom::value, host, port)
-			.await(
-				[=](const node_id&, strong_actor_ptr controller,
-					const std::set<std::string>& ifs) {
-						if (!controller) {
-							aout(self) << R"(*** no controller found at ")" << host << R"(":)"
-								<< port << endl;
-							return;
-						}
-						if (!ifs.empty()) {
-							aout(self) << R"(*** typed actor found at ")" << host << R"(":)"
-								<< port << ", but expected an untyped actor " << endl;
-							return;
-						}
-						aout(self) << "*** successfully connected to controller" << endl;
-						self->state.current_controller = controller;
-						auto controller_hdl = actor_cast<actor>(controller);
-						self->monitor(controller_hdl);
-						self->send(controller_hdl, elevator::register_passenger_atom::value, self);
-						self->become(waiting_for_instruction(self));
-						//waiting_for_instruction(self);
-				},
-				[=](const error& err) {
-					aout(self) << R"(*** cannot connect to ")" << host << R"(":)"
-						<< port << " => " << self->system().render(err) << endl;
-					self->become(unconnected(self));
-				}
-				);
-	}
 
 	behavior waiting_for_instruction(stateful_actor<state>* self)
 	{

@@ -20,9 +20,6 @@
     <ClInclude Include="string_util.hpp">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="tinyfsm.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="passenger_repl.hpp">
       <Filter>Headers</Filter>
     </ClInclude>

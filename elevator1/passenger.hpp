@@ -3,121 +3,66 @@
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
 #include "elevator.hpp"
-#include "tinyfsm.hpp"
 
 namespace passenger
 {
+	enum class passenger_event_type
+	{
+		initiate,
+		connect,
+		connected_ok,
+		disconnect,
+		disconnected,
+		//lift_
+		quit
+	};
+
+
+	struct passenger_event
+	{
+		const passenger_actor& actor;
+		passenger_event_type event_type;
+	};
 	
-
 	void start_passenger(actor_system& system, const elevator::config& cfg);
-
 
 	class passenger_actor : public event_based_actor
 	{
+
 	public:
-		passenger_actor(actor_config& cfg) : event_based_actor(cfg), _cfg{ cfg }
+		passenger_actor(const elevator::config& cfg) : 
+			event_based_actor((actor_config&)cfg)
+			, cfg_{cfg}
+			, current_state { &passenger_actor::initialising }
 		{ 
-			initialise.actor = this; 
-			initialisedOk.actor = this;
-			connect.actor = this;
-			connectedOk.actor = this;
-			connectFailed.actor = this;
-			elevatorAtStartFloor.actor = this;
-			elevatorAtDestinationFloor.actor = this;
+			//cfg_ = cfg ;
+			//current_state = &passenger_actor::initialising;
 		}
 
 		behavior make_behavior() override;
+
+		void handle_event(const passenger_event& event);
+
 	private:
-		actor_config& _cfg;
+
+		const elevator::config& cfg_;
 		strong_actor_ptr controller;
 
-		// events
-		Initialise initialise;
-		InitialisedOk initialisedOk;
-		Connect connect;
-		ConnectedOk connectedOk;
-		ConnectFailed connectFailed;
-		ElevatorAtStartFloor elevatorAtStartFloor;
-		ElevatorAtDestinationFloor elevatorAtDestinationFloor;
+		typedef void(passenger_actor::* state_f)(const passenger_event& e);
+		state_f current_state = nullptr;
 
 		// states
-		void initialising();
+		void initialising(const passenger_event& e);
+		void disconnected(const passenger_event& e);
+		//void connecting(const passenger_event& e);
+		void connected(const passenger_event& e);
+		void in_lobby(const passenger_event& e);
+		void in_elevator(const passenger_event& e);
+
+		//
+
+		bool connect();
 	};
 
-
-	/////////
-	// FSM
-
-	// events
-
-	struct PassengerEvent : tinyfsm::Event 
-	{
-		const passenger_actor * actor;
-	};
-
-	struct Initialise : PassengerEvent {};
-	struct InitialisedOk : PassengerEvent {};
-	struct Connect : PassengerEvent {};
-	struct ConnectedOk : PassengerEvent {};
-	struct ConnectFailed : PassengerEvent {};
-	struct ElevatorAtStartFloor : PassengerEvent {};
-	struct ElevatorAtDestinationFloor : PassengerEvent {};
-
-	// states
-	class PassengerFsm : public tinyfsm::Fsm<PassengerFsm>
-	{
-	public:
-		// default reaction for unhandled events
-		void react(tinyfsm::Event const&) {}; // TODO: diagnostic code here
-
-		virtual void react(Initialise const&);
-		virtual void react(InitialisedOk const&);
-		virtual void react(Connect const&);
-		virtual void react(ConnectedOk const&);
-		virtual void react(ConnectFailed const&);
-
-
-		virtual void entry(void) {};
-		virtual void exit(void) {};
-
-	};
-
-	class Initialising : public PassengerFsm 
-	{
-		void entry() override;
-		void react(InitialisedOk const &) override;
-	};
-
-	class Disconnected : public PassengerFsm
-	{
-		void entry() override;
-		void react(Connect const&);
-	};
-
-	class Connecting : public PassengerFsm
-	{
-		void entry() override;
-		void react(ConnectedOk const&) override;
-		void react(ConnectFailed const&) override;
-	};
-
-	class InLobby : public PassengerFsm
-	{
-		void entry() override;
-		void react(ElevatorAtStartFloor const&);
-	};
-
-	class InElevator : public PassengerFsm
-	{
-		void entry() override;
-		void react(ElevatorAtDestinationFloor);
-	};
-
-	//template<typename E>
-	//void send_event(E const& event) {
-	//	tinyfsm::FsmList<PassengerFsm>::dispatch<E>(event);
-	//}
 
 }
-
-FSM_INITIAL_STATE(passenger::PassengerFsm, passenger::Initialising)

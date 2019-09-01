@@ -167,7 +167,6 @@
     <ClInclude Include="passenger.hpp" />
     <ClInclude Include="passenger_repl.hpp" />
     <ClInclude Include="string_util.hpp" />
-    <ClInclude Include="tinyfsm.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
