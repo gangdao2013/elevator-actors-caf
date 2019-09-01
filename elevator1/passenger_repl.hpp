@@ -10,6 +10,7 @@ namespace passenger
 	public:
 		passenger_repl(actor_config& cfg) : event_based_actor(cfg){}
 		behavior make_behavior() override;
+		static void usage();
 	
 	private:
 		message next_instruction(int floor);

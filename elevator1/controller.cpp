@@ -7,7 +7,7 @@
 
 #include "elevator.hpp"
 #include "controller.hpp"
-#include "passenger.hpp"
+#include "passenger_actor.hpp"
 
 using namespace caf;
 using namespace std;

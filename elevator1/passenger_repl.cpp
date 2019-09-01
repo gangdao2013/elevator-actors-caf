@@ -10,10 +10,9 @@
 
 #include "elevator.hpp"
 #include "controller.hpp"
-#include "passenger.hpp"
+#include "passenger_actor.hpp"
 
 using namespace caf;
-using namespace std;
 using namespace elevator;
 
 namespace passenger
@@ -28,8 +27,8 @@ namespace passenger
 	}
 
 
-	void passenger_usage() {
-		cout << "Usage:" << endl
+	void passenger_repl::usage() {
+		std::cout << "Usage:" << std::endl
 			<< "  quit                  : terminates the program\n" 
 			<< "  connect <host> <port> : connects to a (remote) lift controller\n" 
 			<< "  f <to>                : call elevator from current floor to floor <to> (0 is ground floor)"s << std::endl
@@ -50,7 +49,7 @@ namespace passenger
 
 
 		bool done = false;
-
+		
 		// defining the handler outside the loop is more efficient as it avoids
 		// re-creating the same object over and over again
 		message_handler eval
@@ -70,12 +69,12 @@ namespace passenger
 					auto lport = strtoul(arg2.c_str(), &end, 10);
 					if (end != arg2.c_str() + arg2.size())
 					{
-						cout << R"(")" << arg2 << R"(" is not an unsigned integer)" << endl;
+						std::cout << R"(")" << arg2 << R"(" is not an unsigned integer)" << std::endl;
 						return {};
 					}
 					else if (lport > std::numeric_limits<uint16_t>::max())
 					{
-						cout << R"(")" << arg2 << R"(" > )" << std::numeric_limits<uint16_t>::max() << endl;
+						std::cout << R"(")" << arg2 << R"(" > )" << std::numeric_limits<uint16_t>::max() << std::endl;
 						return {};
 					}
 					else
@@ -114,10 +113,11 @@ namespace passenger
 			auto result = message_builder(words.begin(), words.end()).apply(eval);
 
 			if (!result || result.value().size() == 0)
-				passenger_usage();
+				passenger_repl::usage();
 			else
 				return result.value();
 			cout << "\nf " << floor << "> " << endl;
 		}
+		return {};
 	}
 }

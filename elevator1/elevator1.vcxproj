@@ -157,14 +157,16 @@
   <ItemGroup>
     <ClCompile Include="controller.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="passenger.cpp" />
+    <ClCompile Include="passenger_actor.cpp" />
+    <ClCompile Include="passenger_fsm.cpp" />
     <ClCompile Include="passenger_repl.cpp" />
     <ClCompile Include="string_util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller.hpp" />
     <ClInclude Include="elevator.hpp" />
-    <ClInclude Include="passenger.hpp" />
+    <ClInclude Include="passenger_actor.hpp" />
+    <ClInclude Include="passenger_fsm.hpp" />
     <ClInclude Include="passenger_repl.hpp" />
     <ClInclude Include="string_util.hpp" />
   </ItemGroup>

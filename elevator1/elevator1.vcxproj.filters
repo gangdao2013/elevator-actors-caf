@@ -1,31 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="controller.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="passenger.cpp" />
-    <ClCompile Include="string_util.cpp" />
-    <ClCompile Include="passenger_repl.cpp" />
+    <ClCompile Include="controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="passenger_repl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="string_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="passenger_actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="passenger_fsm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller.hpp">
-      <Filter>Headers</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="elevator.hpp">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="passenger.hpp">
-      <Filter>Headers</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="string_util.hpp">
-      <Filter>Headers</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="passenger_repl.hpp">
-      <Filter>Headers</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="passenger_actor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="passenger_fsm.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Headers">
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{df43ae0c-fc61-48aa-abae-5ae387f65c36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
       <UniqueIdentifier>{ec8733be-0db4-4d59-b4f9-9ec8030a93b6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
