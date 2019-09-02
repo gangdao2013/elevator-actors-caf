@@ -25,8 +25,6 @@ namespace passenger
 			event_based_actor(cfg)
 			, cfg_{cfg}
 		{ 
-			//cfg_ = cfg ;
-			//current_state = &passenger_actor::initialising;
 			transition_to_state(passenger_fsm::initalising);
 		}
 
@@ -37,26 +35,24 @@ namespace passenger
 		actor_config& cfg_;
 		std::string controller_host;
 		uint16_t controller_port{ 0 };
-
 		strong_actor_ptr controller;
+		
 		int current_floor = 0;
 		int called_floor = 0;
 
 		std::shared_ptr<passenger_fsm> fsm_;
 		void transition_to_state(std::shared_ptr<passenger_fsm> state);
 
-		// passenger actor operations
+		// actor event handling functions, called by FSM
 
-		bool initialise();
-		void connect(const std::string& host, uint16_t port);
+		bool on_initialise();
+		void on_connect(const std::string& host, uint16_t port);
+		bool on_call(int from_floor, int to_floor);
+		bool on_arrive(int arrived_at_floor);
+		void on_lobby();
+		void on_elevator();
 		
-		bool call(int from_floor, int to_floor);
-		bool arrive(int arrived_at_floor);
-
-		void into_lobby();
-		void into_elevator();
-		
-		void quit();
+		void on_quit();
 	};
 
 

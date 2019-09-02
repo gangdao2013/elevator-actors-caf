@@ -25,10 +25,8 @@ namespace elevator
 	using elevator_arrived_atom = atom_constant<atom("e_a")>;
 	using destination_arrived_atom = atom_constant<atom("d_a")>;
 	
-	//using repl_prompt_atom = atom_constant<atom("repl_prompt")>;
-	using get_instructions_atom = atom_constant<atom("g_i")>;
-
 	using register_elevator_atom = atom_constant<atom("r_e")>;
+	using waypoint_atom = atom_constant<atom("w")>;
 
 
 	using quit_atom = atom_constant<atom("quit")>;

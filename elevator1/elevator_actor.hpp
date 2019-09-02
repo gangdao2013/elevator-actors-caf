@@ -19,13 +19,15 @@ namespace elevator
 	class elevator_actor : public event_based_actor
 	{
 
-		friend class passenger_fsm;
+		friend class elevator_fsm;
 		friend class initialising_state;
 		friend class disconnected_state;
-		friend class connecting_state;
-		friend class in_lobby_state;
+
+		friend class waypoint_accepting_state;
 		friend class idle_state;
 		friend class in_transit_state;
+		friend class at_waypoint_state;
+
 		friend class quitting_state;
 
 		public:
@@ -33,28 +35,34 @@ namespace elevator
 				event_based_actor(cfg)
 				, cfg_{ cfg }
 			{
-				set_state(elevator_state::initalising);
+				transition_to_state(elevator_fsm::initalising);
 			}
 
 			behavior make_behavior() override;
-			void raise_event(const elevator_event& event);
 
 		private:
 
 			actor_config& cfg_;
 			std::string controller_host;
 			uint16_t controller_port{ 0 };
-
 			strong_actor_ptr controller;
+			
 			int current_floor = 0;
 			int called_floor = 0;
 
-			std::shared_ptr<elevator_state> state_;
-			void set_state(std::shared_ptr<elevator_state> state);
+			std::shared_ptr<elevator_fsm> fsm_;
+			void transition_to_state(std::shared_ptr<elevator_fsm> state);
 
-			void initialise();
-			void connect();
-			void quit();
+			// Actor event handling functions, called by FSM
+
+			bool on_initialise();
+			void on_connect(const std::string& host, uint16_t port);
+			void on_waypoint_received(int waypoint_floor);
+			void on_idle();
+			bool on_start();
+			void on_in_transit();
+			void on_waypoint_arrive(int waypoint_floor);
+			void on_quit();
 
 	};
 }

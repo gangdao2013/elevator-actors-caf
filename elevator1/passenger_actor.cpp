@@ -66,12 +66,12 @@ namespace passenger
 		};
 	}
 
-	void passenger_actor::quit()
+	void passenger_actor::on_quit()
 	{
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
 
-	bool passenger_actor::initialise()
+	bool passenger_actor::on_initialise()
 	{
 		// transition to `unconnected` on elevator controller failure/shutdown
 		// set the handler if we lose connection to elevator controller 
@@ -87,7 +87,7 @@ namespace passenger
 		return true;
 	}
 
-	void passenger_actor::connect(const std::string &host, uint16_t port)
+	void passenger_actor::on_connect(const std::string &host, uint16_t port)
 	{
 		//bool result = false;
 
@@ -143,8 +143,15 @@ namespace passenger
 		this->fsm_->on_enter(*this);
 	}
 
-	bool passenger_actor::call(int from_floor, int to_floor)
+	bool passenger_actor::on_call(int from_floor, int to_floor)
 	{
+		if (from_floor > elevator::FLOOR_MAX 
+			|| from_floor < elevator::FLOOR_MIN
+			|| to_floor > elevator::FLOOR_MAX
+			|| to_floor < elevator::FLOOR_MIN
+			)
+			return false;
+
 		if (controller)
 		{
 			send(controller, elevator::call_atom::value, from_floor, to_floor);
@@ -153,17 +160,17 @@ namespace passenger
 		return false;
 	}
 
-	bool passenger_actor::arrive(int arrived_at_floor)
+	bool passenger_actor::on_arrive(int arrived_at_floor)
 	{
 		return true;
 	}
 
-	void passenger_actor::into_lobby()
+	void passenger_actor::on_lobby()
 	{
 		aout(this) << "\npassenger: stepping into lobby" << endl;
 	}
 
-	void passenger_actor::into_elevator()
+	void passenger_actor::on_elevator()
 	{
 		aout(this) << "\npassenger: stepping into elevator" << endl;
 	}

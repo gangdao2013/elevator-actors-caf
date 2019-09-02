@@ -38,11 +38,11 @@ namespace elevator
 	int elevator_repl::get_current_floor()
 	{
 		auto self = scoped_actor{ system_ };
-		self->request(elevator_, infinite, elevator::get_current_floor_atom::value).receive
-			//self->request(p, infinite, elevator::get_current_elevator_floor_atom::value).receive
-			(
-				[&](int floor) {current_floor = floor; },
-				[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
+		self->request(elevator_, infinite, elevator::get_current_floor_atom::value)
+		.receive
+		(
+			[&](int floor) { current_floor = floor; },
+			[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
 		);
 		return current_floor;
 	}
@@ -50,11 +50,11 @@ namespace elevator
 	std::string elevator_repl::get_current_state_name()
 	{
 		auto self = scoped_actor{ system_ };
-	std:string state_name;
-		self->request(elevator_, infinite, elevator::get_current_state_name_atom::value).receive
-			//self->request(p, infinite, elevator::get_current_elevator_floor_atom::value).receive
-			(
-				[&](string name) {state_name = name; },
+		std:string state_name;
+		self->request(elevator_, infinite, elevator::get_current_state_name_atom::value)
+		.receive
+		(
+				[&](string name) { state_name = name; },
 				[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
 		);
 		return state_name;
@@ -108,20 +108,12 @@ namespace elevator
 			},
 			[&](std::string& cmd, std::string& arg1)
 			{
-				if (cmd == "g")
+				if (cmd == "w")
 				{
-					auto to_floor = string_util::to_integer(arg1);
-					if (to_floor.has_value())
+					auto waypoint_floor = string_util::to_integer(arg1);
+					if (waypoint_floor.has_value())
 					{
-						self->send(elevator_, call_atom::value, to_floor.value());
-					}
-				}
-				else if (cmd == "da") // lift arrives
-				{
-					auto floor = string_util::to_integer(arg1);
-					if (floor.has_value())
-					{
-						self->send(elevator_, destination_arrived_atom::value, floor.value());
+						self->send(elevator_, waypoint_atom::value, waypoint_floor.value());
 					}
 				}
 			}
