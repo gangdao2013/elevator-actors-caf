@@ -81,6 +81,9 @@ namespace passenger {
 	{
 		switch (event.event_type)
 		{
+		case passenger_event_type::call:
+			actor.call();
+			return;
 		case passenger_event_type::connect:
 			actor.set_state(passenger_state::connecting);
 			break;

@@ -19,6 +19,15 @@
     <ClCompile Include="controller_actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="elevator_actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elevator_fsm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elevator_repl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="elevator.hpp">
@@ -37,6 +46,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="controller_actor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="elevator_actor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="elevator_fsm.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="elevator_repl.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -45,22 +45,15 @@ namespace passenger
 		int called_floor = 0;
 
 		std::shared_ptr<passenger_state> state_;
+		void set_state(std::shared_ptr<passenger_state> state);
 
-		//// states
-		//void initialising(const passenger_event& e);
-		//void disconnected(const passenger_event& e);
-		////void connecting(const passenger_event& e);
-		//void connected(const passenger_event& e);
-		//void in_lobby(const passenger_event& e);
-		//void in_elevator(const passenger_event& e);
 
-		//
+		// passenger actor operations
 
 		void initialise();
 		void connect();
 		void quit();
-		//bool get_instruction();
-		void set_state(std::shared_ptr<passenger_state> state);
+		void call();
 	};
 
 

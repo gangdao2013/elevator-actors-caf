@@ -32,7 +32,7 @@ namespace controller
 				self->state.passenger = passenger;
 				self->link_to(passenger);
 			},
-			[=](call_atom) {
+			[=](call_atom, int from_floor, int to_floor) {
 				//self->send(self->state.lift, up_atom::value);
 				aout(self) << "\ncall_atom received" << endl;
 			},

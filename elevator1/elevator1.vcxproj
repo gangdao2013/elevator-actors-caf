@@ -156,6 +156,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="controller_actor.cpp" />
+    <ClCompile Include="elevator_actor.cpp" />
+    <ClCompile Include="elevator_fsm.cpp" />
+    <ClCompile Include="elevator_repl.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="passenger_actor.cpp" />
     <ClCompile Include="passenger_fsm.cpp" />
@@ -165,6 +168,9 @@
   <ItemGroup>
     <ClInclude Include="controller_actor.hpp" />
     <ClInclude Include="elevator.hpp" />
+    <ClInclude Include="elevator_actor.hpp" />
+    <ClInclude Include="elevator_fsm.hpp" />
+    <ClInclude Include="elevator_repl.hpp" />
     <ClInclude Include="passenger_actor.hpp" />
     <ClInclude Include="passenger_fsm.hpp" />
     <ClInclude Include="passenger_repl.hpp" />
