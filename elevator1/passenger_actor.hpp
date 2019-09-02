@@ -27,12 +27,10 @@ namespace passenger
 		{ 
 			//cfg_ = cfg ;
 			//current_state = &passenger_actor::initialising;
-			set_state(passenger_state::initalising);
+			transition_to_state(passenger_fsm::initalising);
 		}
 
 		behavior make_behavior() override;
-
-		void raise_event(const passenger_event& event);
 
 	private:
 
@@ -44,16 +42,21 @@ namespace passenger
 		int current_floor = 0;
 		int called_floor = 0;
 
-		std::shared_ptr<passenger_state> state_;
-		void set_state(std::shared_ptr<passenger_state> state);
-
+		std::shared_ptr<passenger_fsm> fsm_;
+		void transition_to_state(std::shared_ptr<passenger_fsm> state);
 
 		// passenger actor operations
 
-		void initialise();
-		void connect();
+		bool initialise();
+		void connect(const std::string& host, uint16_t port);
+		
+		bool call(int from_floor, int to_floor);
+		bool arrive(int arrived_at_floor);
+
+		void into_lobby();
+		void into_elevator();
+		
 		void quit();
-		void call();
 	};
 
 
