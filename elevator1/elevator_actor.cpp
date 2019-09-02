@@ -20,7 +20,8 @@ using namespace elevator;
 
 namespace elevator
 {
-
+	// override for actor behaviour
+	// note that messages received by the actor are immediately delegated to the FSM
 	behavior elevator_actor::make_behavior()
 	{
 		return {
@@ -54,22 +55,23 @@ namespace elevator
 		};
 	}
 
-
+	// set next state, calling on_exit and on_enter functions
 	void elevator_actor::transition_to_state(std::shared_ptr<elevator_fsm> state)
 	{
-		//assert(this->state_ != nullptr);
 		if (this->fsm_)
 			this->fsm_->on_exit(*this);
 		this->fsm_ = state;
 		this->fsm_->on_enter(*this);
 	}
 
+	// cya
 	void elevator_actor::on_quit()
 	{
 
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
 
+	// set up
 	bool elevator_actor::on_initialise()
 	{
 		// transition to `unconnected` on elevator controller failure/shutdown
@@ -86,6 +88,7 @@ namespace elevator
 		return true;
 	}
 
+	// connect to the elevator controller
 	void elevator_actor::on_connect(const std::string& host, uint16_t port)
 	{
 		// make sure we are not pointing to an old controller
@@ -131,27 +134,31 @@ namespace elevator
 				);
 	}
 
+	// waypoint floor received from controller
 	void elevator_actor::on_waypoint_received(int waypoint_floor)
 	{
 		if (waypoint_floor > elevator::FLOOR_MAX || waypoint_floor < elevator::FLOOR_MIN)
 			return;
 	}
 
+	// no more waypoints/passengers, wait for a job from the controller
 	void elevator_actor::on_idle()
 	{
 	}
 
 	// start the lift if there are any waypoints
 	// return true: has waypoints and ready to go, false: no waypoints
-	// FSM only has idle_state calling this
+	// FSM only has idle_state calling this; it's just needed to kick off state transitions from idle if there are waypoints
 	bool elevator_actor::on_start()
 	{
 	}
 
+	// starting moving
 	void elevator_actor::on_in_transit()
 	{
 	}
 
+	// at a floor, doors opening, picking up & dropping off passengers, 
 	void elevator_actor::on_waypoint_arrive(int waypoint_floor)
 	{
 	}
