@@ -27,38 +27,31 @@ namespace passenger
 			[=](connect_to_controller_atom, std::string host, uint16_t port)
 			{
 				aout(this) << "\npassenger: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
-				this->controller_host = host;
-				this->controller_port = port;
-				raise_event(passenger_event{ *this, passenger_event_type::connect });
+				fsm_->handle_connect(*this, host, port);
 			},
-			[=](elevator::connect_to_controller_atom)
-			{
-				aout(this) << "\npassenger: connect_to_controller_atom received" << endl;
-				raise_event(passenger_event{ *this, passenger_event_type::connect });
-			},
+			//[=](elevator::connect_to_controller_atom)
+			//{
+			//	aout(this) << "\npassenger: connect_to_controller_atom received" << endl;
+			//	raise_event(passenger_event{ *this, passenger_event_type::connect });
+			//},
 			[=](elevator::call_atom, int to_floor)
 			{
 				aout(this) << "\npassenger: call_atom received, for floor: " << to_floor << endl;
-				called_floor = to_floor;
-				// for now just to test against
-				// TODO: remove this line
-				// current_floor = to_floor;
-				raise_event(passenger_event{ *this, passenger_event_type::call });
+				fsm_->handle_call(*this, current_floor, to_floor);
 			},
 			[=](elevator::quit_atom)
 			{
 				aout(this) << "\npassenger: quit_atom received" << endl;
-				raise_event(passenger_event{ *this, passenger_event_type::quit });
+				fsm_->handle_quit(*this);
 			},
 			[=](elevator_arrived_atom) {
 				aout(this) << "\npassenger: elevator_arrived_atom received" << endl;
-				raise_event(passenger_event{ *this, passenger_event_type::elevator_arrived });
+				fsm_->handle_elevator_arrived(*this);
 			},
 			[=](destination_arrived_atom, int floor)
 			{
-				current_floor = floor;
 				aout(this) << "\npassenger: destination_arrived_atom received" << endl;
-				raise_event(passenger_event{ *this, passenger_event_type::destination_arrived });
+				fsm_->handle_destination_arrived(*this, floor);
 			},
 			[=](get_current_floor_atom)
 			{
@@ -68,26 +61,17 @@ namespace passenger
 			[=](get_current_state_name_atom)
 			{
 				//aout(this) << "\npassenger: get_state_name_atom received" << endl;
-				return state_->get_state_name();
+				return fsm_->get_state_name();
 			}
 		};
 	}
 
-	void passenger_actor::raise_event(const passenger_event& event)
+	void passenger_actor::on_quit()
 	{
-		assert(this->state_ != nullptr);
-
-		state_->handle_event(*this, event);
-
-	}
-
-	void passenger_actor::quit()
-	{
-
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
 
-	void passenger_actor::initialise()
+	bool passenger_actor::on_initialise()
 	{
 		// transition to `unconnected` on elevator controller failure/shutdown
 		// set the handler if we lose connection to elevator controller 
@@ -97,65 +81,98 @@ namespace passenger
 				{
 					aout(this) << "\npassenger: lost connection to elevator controller, please reconnect or quit" << endl;
 					this->controller = nullptr;
+					transition_to_state(passenger_fsm::disconnected);
 				}
 			});
-		raise_event(passenger_event{ *this, passenger_event_type::initialised_ok });
-		return;
+		return true;
 	}
 
-	void passenger_actor::connect()
+	void passenger_actor::on_connect(const std::string &host, uint16_t port)
 	{
+		//bool result = false;
 
-		//stateful_actor<state>* self, const std::string& host, uint16_t port
 		// make sure we are not pointing to an old controller
 		controller = nullptr;
+		controller_host.assign("");
+		controller_port = 0;
 
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
 
-		request(mm, infinite, connect_atom::value, controller_host, controller_port)
+		request(mm, infinite, connect_atom::value, host, port)
 			.await
 			(
-				[&](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs) 
+				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs) 
 				{
 					if (!controller) {
-						aout(this) << R"(*** no controller found at ")" << controller_host << R"(":)"
+						aout(this) << R"(*** no controller found at ")" << host << R"(":)"
 							<< controller_port << endl;
 						return;
 					}
 					if (!ifs.empty()) {
-						aout(this) << R"(*** typed actor found at ")" << controller_host << R"(":)"
+						aout(this) << R"(*** typed actor found at ")" << host << R"(":)"
 							<< controller_port << ", but expected an untyped actor " << endl;
 						return;
 					}
 					aout(this) << "*** successfully connected to controller" << endl;
+					controller_host.assign(host);
+					controller_port = port;
 					this->controller = controller;
-					//auto controller_hdl = actor_cast<actor>(controller);
-					//this->monitor(controller_hdl);
+					auto controller_hdl = actor_cast<actor>(controller);
+					this->monitor(controller_hdl);
 					//this->send(controller_hdl, elevator::register_passenger_atom::value, this);
-					raise_event(passenger_event{ *this, passenger_event_type::connected_ok });
+					//result = true;
+					transition_to_state(passenger_fsm::in_lobby);
 				},
-				[&](const error& err) 
+				[host, port, this](const error& err) 
 				{
-					aout(this) << R"(*** cannot connect to ")" << controller_host << R"(":)"
-						<< controller_port << " => " << this->system().render(err) << endl;
-					raise_event(passenger_event{ *this, passenger_event_type::connection_fail });
+					aout(this) << R"(*** cannot connect to ")" << host << R"(":)"
+						<< port << " => " << this->system().render(err) << endl;
+					transition_to_state(passenger_fsm::disconnected);
 				}
 			);
+		//return result;
 	}
 
-	void passenger_actor::set_state(std::shared_ptr<passenger_state> state)
+	void passenger_actor::transition_to_state(std::shared_ptr<passenger_fsm> state)
 	{
 		//assert(this->state_ != nullptr);
-		if (this->state_)
-			this->state_->on_exit(*this);
-		this->state_ = state;
-		this->state_->on_enter(*this);
+		if (this->fsm_)
+			this->fsm_->on_exit(*this);
+		this->fsm_ = state;
+		this->fsm_->on_enter(*this);
 	}
 
-	void passenger_actor::call()
+	bool passenger_actor::on_call(int from_floor, int to_floor)
 	{
-		send(controller, elevator::call_atom::value, called_floor);
+		if (from_floor > elevator::FLOOR_MAX 
+			|| from_floor < elevator::FLOOR_MIN
+			|| to_floor > elevator::FLOOR_MAX
+			|| to_floor < elevator::FLOOR_MIN
+			)
+			return false;
+
+		if (controller)
+		{
+			send(controller, elevator::call_atom::value, from_floor, to_floor);
+			return true;
+		}
+		return false;
+	}
+
+	bool passenger_actor::on_arrive(int arrived_at_floor)
+	{
+		return true;
+	}
+
+	void passenger_actor::on_lobby()
+	{
+		aout(this) << "\npassenger: stepping into lobby" << endl;
+	}
+
+	void passenger_actor::on_elevator()
+	{
+		aout(this) << "\npassenger: stepping into elevator" << endl;
 	}
 
 }

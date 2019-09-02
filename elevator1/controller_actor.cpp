@@ -34,7 +34,7 @@ namespace controller
 			},
 			[=](call_atom, int from_floor, int to_floor) {
 				//self->send(self->state.lift, up_atom::value);
-				aout(self) << "\ncall_atom received" << endl;
+				aout(self) << "\ncontroller: call_atom received, from_floor: " << from_floor << ", to_floor: " << to_floor << endl;
 			},
 			//[=](down_atom) {
 			//	self->send(self->state.lift, down_atom::value);

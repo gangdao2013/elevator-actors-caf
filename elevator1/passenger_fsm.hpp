@@ -42,104 +42,76 @@ namespace passenger
 
 	class passenger_actor;
 
-	enum class passenger_event_type
-	{
-		initiate,
-		initialised_ok,
-		connect,
-		connected_ok,
-		connection_fail,
-		disconnect,
-		disconnected,
-		call,
-		elevator_arrived,
-		destination_arrived,
-		quit
-	};
-
-	struct passenger_event
-	{
-		const passenger_actor& actor;
-		passenger_event_type event_type;
-	};
-
-
 	class initialising_state;
 	class disconnected_state;
-	class connecting_state;
 	class in_lobby_state;
 	class in_elevator_state;
-	class awaiting_instruction_state;
 	class quitting_state;
 
-	class passenger_state
+	class passenger_fsm
 	{
 	public:
 		//virtual ~passenger_state() {};
-		virtual void on_enter(passenger_actor& actor) {};
+
+		// FSM Behaviours
+
+		virtual void on_enter(passenger_actor& actor) {};		
 		virtual void on_exit(passenger_actor& actor) {};
-		virtual void handle_event(passenger_actor& actor, const passenger_event& event) {};
+
+		// FSM event handlers
+
+		virtual void handle_initialise(passenger_actor& actor) {};
+		virtual void handle_connect(passenger_actor& actor, std::string host, uint16_t port);
+		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) {};
+		virtual void handle_elevator_arrived(passenger_actor& actor) {};
+		virtual void handle_destination_arrived(passenger_actor& actor, int arrived_at_floor) {};
+		virtual void handle_quit(passenger_actor& actor);
+		
 		virtual std::string get_state_name() { return "passenger_state"; };
+
+		// FSM static state object pointers
 
 		static std::shared_ptr<initialising_state> initalising;
 		static std::shared_ptr<disconnected_state> disconnected;
-		static std::shared_ptr<connecting_state> connecting;
 		static std::shared_ptr<in_lobby_state> in_lobby;
 		static std::shared_ptr<in_elevator_state> in_elevator;
-		static std::shared_ptr<awaiting_instruction_state> awaiting_instruction;
 		static std::shared_ptr<quitting_state> quitting;
 	};
 
-	class initialising_state : public passenger_state
+	// FSM States
+
+	class initialising_state : public passenger_fsm
 	{
 		virtual void on_enter(passenger_actor& actor) override;
-		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
 		virtual std::string get_state_name() override { return "initialising"; };
 	};
 
-	class disconnected_state : public passenger_state
+	class disconnected_state : public passenger_fsm
 	{
-		void on_enter(passenger_actor& actor) override;
-		virtual void  handle_event(passenger_actor& actor, const passenger_event& event) override;
 		virtual std::string get_state_name() override { return "disconnected"; };
 	};
 
-	class connecting_state : public passenger_state
+	class in_lobby_state : public passenger_fsm
 	{
 		void on_enter(passenger_actor& actor) override;
-		virtual void  handle_event(passenger_actor& actor, const passenger_event& event) override;
-		virtual std::string get_state_name() override { return "connecting"; };
-	};
 
-	class in_lobby_state : public passenger_state
-	{
-		void on_enter(passenger_actor& actor) override;
-		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) override;
+		virtual void handle_elevator_arrived(passenger_actor& actor) override;
+
 		virtual std::string get_state_name() override { return "in_lobby"; };
 	};
 
-	class in_elevator_state : public passenger_state
+	class in_elevator_state : public passenger_fsm
 	{
 		void on_enter(passenger_actor& actor) override;
-		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
+		virtual void handle_destination_arrived(passenger_actor& actor, int arrived_at_floor) override;
 		virtual std::string get_state_name() override { return "in_elevator"; };
 	};
 
-	class awaiting_instruction_state : public passenger_state
-	{
-		void on_enter(passenger_actor& actor) override;
-		virtual void handle_event(passenger_actor& actor, const passenger_event& event) override;
-		virtual std::string get_state_name() override { return "awaiting_instruction"; };
-	};
-
-	class quitting_state : public passenger_state
+	class quitting_state : public passenger_fsm
 	{
 		virtual void on_enter(passenger_actor& actor) override;
 		virtual std::string get_state_name() override { return "quitting"; };
 	};
-
-
-
-
 
 }

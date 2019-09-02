@@ -24,37 +24,22 @@ namespace elevator
 	behavior elevator_actor::make_behavior()
 	{
 		return {
-			[=](connect_to_controller_atom, std::string host, uint16_t port)
+			[=](elevator::quit_atom)
+			{
+				aout(this) << "\nelevator: quit_atom received" << endl;
+				fsm_->handle_quit(*this);
+			},
+			[=](connect_to_controller_atom, const std::string& host, uint16_t port)
 			{
 				aout(this) << "\nelevator: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
 				this->controller_host = host;
 				this->controller_port = port;
-				raise_event(elevator_event{ *this, elevator_event_type::connect });
+				fsm_->handle_connect(*this, host, port);
 			},
-			[=](elevator::connect_to_controller_atom)
+			[=](elevator::waypoint_atom, int waypoint_floor)
 			{
-				aout(this) << "\nelevator: connect_to_controller_atom received" << endl;
-				raise_event(elevator_event{ *this, elevator_event_type::connect });
-			},
-			//[=](elevator::call_atom, int to_floor)
-			//{
-			//	aout(this) << "\nelevator: call_atom received, for floor: " << to_floor << endl;
-			//	called_floor = to_floor;
-			//	// for now just to test against
-			//	// TODO: remove this line
-			//	current_floor = to_floor;
-			//	raise_event(elevator_event{ *this, elevator_event_type::call });
-			//},
-			[=](elevator::quit_atom)
-			{
-				aout(this) << "\nelevator: quit_atom received" << endl;
-				raise_event(elevator_event{ *this, elevator_event_type::quit });
-			},
-			[=](destination_arrived_atom, int floor)
-			{
-				current_floor = floor;
-				aout(this) << "\nelevator: destination_arrived_atom received" << endl;
-				raise_event(elevator_event{ *this, elevator_event_type::destination_arrived });
+				aout(this) << "\nelevator: waypoint_atom received, for floor: " << waypoint_floor << endl;
+				fsm_->handle_waypoint_received(*this, waypoint_floor);
 			},
 			[=](get_current_floor_atom)
 			{
@@ -64,26 +49,28 @@ namespace elevator
 			[=](get_current_state_name_atom)
 			{
 				//aout(this) << "\nelevator: get_current_state_name_atom received" << endl;
-				return state_->get_state_name();
+				return fsm_->get_state_name();
 			}
 		};
 	}
 
-	void elevator_actor::raise_event(const elevator_event& event)
+
+	void elevator_actor::transition_to_state(std::shared_ptr<elevator_fsm> state)
 	{
-		assert(this->state_ != nullptr);
-
-		state_->handle_event(*this, event);
-
+		//assert(this->state_ != nullptr);
+		if (this->fsm_)
+			this->fsm_->on_exit(*this);
+		this->fsm_ = state;
+		this->fsm_->on_enter(*this);
 	}
 
-	void elevator_actor::quit()
+	void elevator_actor::on_quit()
 	{
 
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
 
-	void elevator_actor::initialise()
+	bool elevator_actor::on_initialise()
 	{
 		// transition to `unconnected` on elevator controller failure/shutdown
 		// set the handler if we lose connection to elevator controller 
@@ -95,16 +82,16 @@ namespace elevator
 					this->controller = nullptr;
 				}
 			});
-		raise_event(elevator_event{ *this, elevator_event_type::initialised_ok });
-		return;
+
+		return true;
 	}
 
-	void elevator_actor::connect()
+	void elevator_actor::on_connect(const std::string& host, uint16_t port)
 	{
-
-		//stateful_actor<state>* self, const std::string& host, uint16_t port
 		// make sure we are not pointing to an old controller
 		controller = nullptr;
+		controller_host.assign("");
+		controller_port = 0;
 
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
@@ -112,41 +99,64 @@ namespace elevator
 		request(mm, infinite, connect_atom::value, controller_host, controller_port)
 			.await
 			(
-				[&](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
+				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
 				{
-					if (!controller) {
+					if (!controller)
+					{
 						aout(this) << R"(*** no controller found at ")" << controller_host << R"(":)"
 							<< controller_port << endl;
 						return;
 					}
-					if (!ifs.empty()) {
+					if (!ifs.empty())
+					{
 						aout(this) << R"(*** typed actor found at ")" << controller_host << R"(":)"
 							<< controller_port << ", but expected an untyped actor " << endl;
 						return;
 					}
 					aout(this) << "*** successfully connected to controller" << endl;
+					controller_host.assign(host);
+					controller_port = port;
 					this->controller = controller;
-					//auto controller_hdl = actor_cast<actor>(controller);
-					//this->monitor(controller_hdl);
+					auto controller_hdl = actor_cast<actor>(controller);
+					this->monitor(controller_hdl);
 					//this->send(controller_hdl, elevator::register_elevator_atom::value, this);
-					raise_event(elevator_event{ *this, elevator_event_type::connected_ok });
+					transition_to_state(elevator_fsm::idle);
 				},
-				[&](const error& err)
+				[host, port, this](const error& err)
 				{
 					aout(this) << R"(*** cannot connect to ")" << controller_host << R"(":)"
 						<< controller_port << " => " << this->system().render(err) << endl;
-					raise_event(elevator_event{ *this, elevator_event_type::connection_fail });
+					transition_to_state(elevator_fsm::disconnected);
 				}
 				);
 	}
 
-	void elevator_actor::set_state(std::shared_ptr<elevator_state> state)
+	void elevator_actor::on_waypoint_received(int waypoint_floor)
 	{
-		//assert(this->state_ != nullptr);
-		if (this->state_)
-			this->state_->on_exit(*this);
-		this->state_ = state;
-		this->state_->on_enter(*this);
+		if (waypoint_floor > elevator::FLOOR_MAX || waypoint_floor < elevator::FLOOR_MIN)
+			return;
 	}
+
+	void elevator_actor::on_idle()
+	{
+	}
+
+	// start the lift if there are any waypoints
+	// return true: has waypoints and ready to go, false: no waypoints
+	// FSM only has idle_state calling this
+	bool elevator_actor::on_start()
+	{
+	}
+
+	void elevator_actor::on_in_transit()
+	{
+	}
+
+	void elevator_actor::on_waypoint_arrive(int waypoint_floor)
+	{
+	}
+
+
+
 
 }

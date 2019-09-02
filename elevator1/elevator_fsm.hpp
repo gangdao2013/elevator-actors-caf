@@ -7,7 +7,7 @@ namespace elevator
 {
 
 
-	// State transition for the passenger for connecting to the elevator controller, making calls, in transit, etc:
+	// State transition for the elevator for connecting to the elevator controller, making calls, in transit, etc:
 	//
 	//                    +-------------+
 	//                    |    init     |
@@ -29,113 +29,98 @@ namespace elevator
 	//    |{connect Host Port}   |                          |
 	//    |                      V                          |
 	//    |               +-------------+ {DOWN controller} |
-	//    +---------------|   waiting   |-------------------+
-	//                    | /idle       |<---------+       
+	//    +---------------|   idle      |-------------------+
+	//                    |             |<---------+       
 	//	                  +-------------+          |
 	//	                        |                  |
-	//       {inst arrives}     |                  | {arrived at destination}
+	//            {waypoint}    |                  | {no waypoints}
 	//                          V                  |
-	//                    +-------------+          |
-	//                    |             |          |
-	//                    | in transit  |----------+
-	//                    +-------------+
+	//                    +-------------+       +--------------+
+	//                    |             |------>|              |
+	//    {waypoint}----->| in transit  |<------| at waypoint  |<---- {waypoint}
+	//                    +-------------+       +--------------+
 
+	
 	class elevator_actor;
 
-	enum class elevator_event_type
-	{
-		initiate,
-		initialised_ok,
-		connect,
-		connected_ok,
-		connection_fail,
-		disconnect,
-		disconnected,
-		//call,
-		//elevator_arrived,
-		destination_arrived,
-		quit
-	};
-
-	struct elevator_event
-	{
-		const elevator_actor& actor;
-		elevator_event_type event_type;
-	};
-
-
+	
 	class initialising_state;
 	class disconnected_state;
-	class connecting_state;
+	
+	class waypoint_accepting_state;
+	
 	class idle_state;
 	class in_transit_state;
-	//class awaiting_instruction_state;
+	class at_waypoint_state;
+	
 	class quitting_state;
 
-	class elevator_state
+	class elevator_fsm
 	{
 	public:
 		//virtual ~elevator_state() {};
 		virtual void on_enter(elevator_actor& actor) {};
 		virtual void on_exit(elevator_actor& actor) {};
-		virtual void handle_event(elevator_actor& actor, const elevator_event& event) {};
+
+		// FSM event handlers
+
+		virtual void handle_initialise(elevator_actor& actor) {};
+		virtual void handle_connect(elevator_actor& actor, std::string host, uint16_t port);
+		virtual void handle_start(elevator_actor& actor) {};
+		virtual void handle_waypoint_received(elevator_actor& actor, int waypoint_floor) {};
+		virtual void handle_quit(elevator_actor& actor);
+
 		virtual std::string get_state_name() { return "elevator_state"; };
 
 		static std::shared_ptr<initialising_state> initalising;
 		static std::shared_ptr<disconnected_state> disconnected;
-		static std::shared_ptr<connecting_state> connecting;
 		static std::shared_ptr<idle_state> idle;
 		static std::shared_ptr<in_transit_state> in_transit;
-		//static std::shared_ptr<awaiting_instruction_state> awaiting_instruction;
+		static std::shared_ptr<at_waypoint_state> at_waypoint;
 		static std::shared_ptr<quitting_state> quitting;
 	};
 
-	class initialising_state : public elevator_state
+	// FSM States
+
+	class initialising_state : public elevator_fsm
 	{
 		virtual void on_enter(elevator_actor& actor) override;
-		virtual void handle_event(elevator_actor& actor, const elevator_event& event) override;
 		virtual std::string get_state_name() override { return "initialising"; };
 	};
 
-	class disconnected_state : public elevator_state
+	class disconnected_state : public elevator_fsm
 	{
-		void on_enter(elevator_actor& actor) override;
-		virtual void  handle_event(elevator_actor& actor, const elevator_event& event) override;
 		virtual std::string get_state_name() override { return "disconnected"; };
 	};
 
-	class connecting_state : public elevator_state
-	{
-		void on_enter(elevator_actor& actor) override;
-		virtual void  handle_event(elevator_actor& actor, const elevator_event& event) override;
-		virtual std::string get_state_name() override { return "connecting"; };
+	class waypoint_accepting_state : public elevator_fsm {
+		virtual void handle_waypoint_received(elevator_actor& actor, int waypoint_floor) override;
 	};
 
-	class idle_state : public elevator_state
+	class idle_state : public waypoint_accepting_state
 	{
-		void on_enter(elevator_actor& actor) override;
-		virtual void handle_event(elevator_actor& actor, const elevator_event& event) override;
-		virtual std::string get_state_name() override { return "idle"; };
+		virtual void on_enter(elevator_actor& actor) override;
+		virtual void handle_start(elevator_actor& actor) override;
+		virtual std::string get_state_name() override { return "in_lobby"; };
 	};
 
-	class in_transit_state : public elevator_state
+	class in_transit_state : public waypoint_accepting_state
 	{
-		void on_enter(elevator_actor& actor) override;
-		virtual void handle_event(elevator_actor& actor, const elevator_event& event) override;
+		virtual void on_enter(elevator_actor& actor) override;
 		virtual std::string get_state_name() override { return "in_transit"; };
 	};
 
-	//class awaiting_instruction_state : public elevator_state
-	//{
-	//	void on_enter(elevator_actor& actor) override;
-	//	virtual void handle_event(elevator_actor& actor, const elevator_event& event) override;
-	//	virtual std::string get_state_name() override { return "awaiting_instruction"; };
-	//};
+	class at_waypoint_state : public waypoint_accepting_state
+	{
+		virtual void on_enter(elevator_actor& actor) override;
+		virtual std::string get_state_name() override { return "at_waypoint"; };
+	};
 
-	class quitting_state : public elevator_state
+	class quitting_state : public elevator_fsm
 	{
 		virtual void on_enter(elevator_actor& actor) override;
 		virtual std::string get_state_name() override { return "quitting"; };
 	};
+
 
 }
