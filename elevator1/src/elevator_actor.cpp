@@ -44,13 +44,15 @@ namespace elevator
 			},
 			[=](get_current_floor_atom)
 			{
-				//aout(this) << "\nelevator: get_current_floor_atom received" << endl;
 				return current_floor;
 			},
 			[=](get_current_state_name_atom)
 			{
-				//aout(this) << "\nelevator: get_current_state_name_atom received" << endl;
 				return fsm->get_state_name();
+			},
+			[=](get_name_atom)
+			{
+				return name;
 			},
 			[=](timer_atom)
 			{

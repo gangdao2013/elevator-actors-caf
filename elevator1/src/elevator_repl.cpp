@@ -18,7 +18,7 @@ using namespace std;
 namespace elevator
 {
 
-	void elevator_repl::usage(scoped_actor& self)
+	void elevator_repl::usage()
 	{
 		//auto self = scoped_actor{ system_ };
 		aout(self) << "Usage:" << std::endl
@@ -27,62 +27,62 @@ namespace elevator
 			<< "  connect|c <host> <port> : connects to a (remote) lift controller\n"
 			<< "  w <f>                   : send elevator a waypoint floor <f> (0 is ground floor)" << std::endl << std::flush;
 		;
-	};
-
-	bool elevator_repl::send_message(message msg)
+	}
+	std::string elevator_repl::get_prompt()
 	{
-		auto self = scoped_actor{ system_ };
-		self->send(elevator_, msg);
-		return true;
+		return "[" + get_name() + "][" + get_current_state_name() + "][" + std::to_string(get_current_floor()) + "]> ";
+	}
+
+	string elevator_repl::get_name()
+	{
+		if (elevator_name != "")
+			return elevator_name;
+
+		self->request(actor_, infinite, elevator::get_name_atom::value)
+			.receive
+			(
+				[&](string name) { elevator_name = name; },
+				[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
+		);
+		return elevator_name;
 	}
 
 	int elevator_repl::get_current_floor()
 	{
-		auto self = scoped_actor{ system_ };
-		self->request(elevator_, infinite, elevator::get_current_floor_atom::value)
+		self->request(actor_, infinite, elevator::get_current_floor_atom::value)
 		.receive
 		(
-			[&](int floor) { current_floor = floor; },
+			[&](int floor) { elevator_floor = floor; },
 			[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
 		);
-		return current_floor;
+		return elevator_floor;
 	}
 
 	std::string elevator_repl::get_current_state_name()
 	{
-		auto self = scoped_actor{ system_ };
-		std:string state_name;
-		self->request(elevator_, infinite, elevator::get_current_state_name_atom::value)
+
+		self->request(actor_, infinite, elevator::get_current_state_name_atom::value)
 		.receive
 		(
-				[&](string name) { state_name = name; },
+				[&](string name) { elevator_state = name; },
 				[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
 		);
-		return state_name;
+		return elevator_state;
 	}
 
-
-	void elevator_repl::start_repl()
+	message_handler elevator_repl::get_eval()
 	{
-
-		bool done = false;
-		auto self = scoped_actor{ system_ };
-
-		usage(self);
-
-		// defining the handler outside the loop is more efficient as it avoids
-		// re-creating the same object over and over again
 		message_handler eval
 		{
 			[&](const std::string& cmd)
 			{
 				if (cmd == "quit" || cmd == "q")
 				{
-					done = true;
-					self->send(elevator_, quit_atom::value);
+					quit = true;
+					self->send(actor_, quit_atom::value);
 				}
 				else if (cmd == "help" || cmd == "h") // help
-					usage(self);
+					usage();
 			},
 			[&](std::string& cmd, std::string& arg1)
 			{
@@ -91,7 +91,7 @@ namespace elevator
 					auto waypoint_floor = string_util::to_integer(arg1);
 					if (waypoint_floor.has_value())
 					{
-						self->send(elevator_, waypoint_atom::value, waypoint_floor.value());
+						self->send(actor_, waypoint_atom::value, waypoint_floor.value());
 					}
 				}
 			},
@@ -112,30 +112,12 @@ namespace elevator
 					else
 					{
 						std::string host = arg1;
-						self->send(elevator_, connect_to_controller_atom::value, host, lport);
+						self->send(actor_, connect_to_controller_atom::value, host, lport);
 					}
 				}
 			}
 		};
 
-		std::string line;
-
-		aout(self) << "\n(" << get_current_state_name() << ") f " << get_current_floor() << "> " << std::flush;
-		while (!done && std::getline(std::cin, line))
-		{
-			line = string_util::trim(std::move(line)); // ignore leading and trailing whitespaces
-			std::vector<std::string> words;
-			split(words, line, is_any_of(" "), token_compress_on);
-
-			//if (!message_builder(words.begin(), words.end()).apply(eval))
-			//	elevator_repl::usage(self);
-			if (words.size() > 0)
-			{
-				if (!message_builder(words.begin(), words.end()).apply(eval))
-					usage(self);
-			}
-			aout(self) << "\n(" << get_current_state_name() << ") f " << get_current_floor() << "> " << std::flush;
-		}
-		return;
+		return eval;
 	}
 }

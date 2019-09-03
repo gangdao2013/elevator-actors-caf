@@ -21,16 +21,17 @@ namespace passenger
 		friend class quitting_state;
 
 	public:
-		passenger_actor(actor_config &cfg) : 
+		passenger_actor(actor_config &cfg, std::string name) : 
 			event_based_actor(cfg)
 			, cfg_{cfg}
+			, name{ name }
 		{ 
 			transition_to_state(passenger_fsm::initalising);
 		}
 
 		behavior make_behavior() override;
 
-	private:
+	protected:
 
 		actor_config& cfg_;
 		std::string controller_host;
@@ -39,6 +40,7 @@ namespace passenger
 		
 		int current_floor = 0;
 		int called_floor = 0;
+		std::string name;
 
 		std::shared_ptr<passenger_fsm> fsm;
 		void transition_to_state(std::shared_ptr<passenger_fsm> state);

@@ -18,6 +18,30 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\includes\repl.hpp" />
+    <ClInclude Include="src\includes\controller_actor.hpp" />
+    <ClInclude Include="src\includes\elevator.hpp" />
+    <ClInclude Include="src\includes\elevator_actor.hpp" />
+    <ClInclude Include="src\includes\elevator_fsm.hpp" />
+    <ClInclude Include="src\includes\elevator_repl.hpp" />
+    <ClInclude Include="src\includes\passenger_actor.hpp" />
+    <ClInclude Include="src\includes\passenger_fsm.hpp" />
+    <ClInclude Include="src\includes\passenger_repl.hpp" />
+    <ClInclude Include="src\includes\string_util.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\repl.cpp" />
+    <ClCompile Include="src\controller_actor.cpp" />
+    <ClCompile Include="src\elevator_actor.cpp" />
+    <ClCompile Include="src\elevator_fsm.cpp" />
+    <ClCompile Include="src\elevator_repl.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\passenger_actor.cpp" />
+    <ClCompile Include="src\passenger_fsm.cpp" />
+    <ClCompile Include="src\passenger_repl.cpp" />
+    <ClCompile Include="src\string_util.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{07C35FB9-9B41-44A1-8DED-FD4CBE072100}</ProjectGuid>
@@ -92,6 +116,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)/src/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +151,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)/src/includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

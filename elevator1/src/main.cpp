@@ -11,7 +11,7 @@ using namespace caf;
 
 void start_passenger(actor_system& system, const elevator::config& cfg)
 {
-	auto passenger = system.spawn<passenger::passenger_actor>();
+	auto passenger = system.spawn<passenger::passenger_actor>("Fred");
 
 	if (!cfg.host.empty() && cfg.port > 0)
 		anon_send(passenger, elevator::connect_to_controller_atom::value, cfg.host, cfg.port);

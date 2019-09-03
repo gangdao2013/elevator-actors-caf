@@ -29,11 +29,6 @@ namespace passenger
 				aout(this) << "\npassenger: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
 				fsm->handle_connect(*this, host, port);
 			},
-			//[=](elevator::connect_to_controller_atom)
-			//{
-			//	aout(this) << "\npassenger: connect_to_controller_atom received" << endl;
-			//	raise_event(passenger_event{ *this, passenger_event_type::connect });
-			//},
 			[=](elevator::call_atom, int to_floor)
 			{
 				aout(this) << "\npassenger: call_atom received, for floor: " << to_floor << endl;
@@ -55,14 +50,16 @@ namespace passenger
 			},
 			[=](get_current_floor_atom)
 			{
-				//aout(this) << "\npassenger: get_current_passenger_floor_atom received" << endl;
 				return current_floor;
 			},
 			[=](get_current_state_name_atom)
 			{
-				//aout(this) << "\npassenger: get_state_name_atom received" << endl;
 				return fsm->get_state_name();
-			}
+			},
+			[=](get_name_atom)
+			{
+				return name;
+			},
 		};
 	}
 

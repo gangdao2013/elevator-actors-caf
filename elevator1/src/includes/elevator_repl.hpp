@@ -2,32 +2,31 @@
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
 #include "elevator.hpp"
+
+#include "repl.hpp"
 #include "elevator_actor.hpp"
 
 namespace elevator
 {
-	class elevator_repl
+	class elevator_repl: public repl
 	{
 	public:
 
-		elevator_repl(actor_system& system, const actor& elevator_) :
-			system_{ system }
-			, elevator_{ elevator_ }
-			, current_floor{ 0 }
+		elevator_repl(actor_system& system, const actor& actor) : repl(system, actor)
 		{}
 
-		void start_repl();
+		virtual void usage() override;
+		virtual std::string get_prompt() override;
+		virtual caf::message_handler get_eval();
 
-		void usage(scoped_actor& self);
-		bool send_message(message);
 		int get_current_floor();
 		std::string get_current_state_name();
+		std::string get_name();
 
-	private:
-
-		actor_system& system_;
-		const actor& elevator_;
-		int current_floor = 0;
+	protected:
+		std::string elevator_state;
+		std::string elevator_name;
+		int elevator_floor;
 
 	};
 

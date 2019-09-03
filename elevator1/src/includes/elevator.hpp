@@ -33,6 +33,8 @@ namespace elevator
 
 	using timer_atom = atom_constant<atom("t")>;
 
+	using get_name_atom = atom_constant<atom("g_n")>;
+
 
 	using quit_atom = atom_constant<atom("quit")>;
 
