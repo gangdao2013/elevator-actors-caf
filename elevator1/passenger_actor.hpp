@@ -40,7 +40,7 @@ namespace passenger
 		int current_floor = 0;
 		int called_floor = 0;
 
-		std::shared_ptr<passenger_fsm> fsm_;
+		std::shared_ptr<passenger_fsm> fsm;
 		void transition_to_state(std::shared_ptr<passenger_fsm> state);
 
 		// actor event handling functions, called by FSM

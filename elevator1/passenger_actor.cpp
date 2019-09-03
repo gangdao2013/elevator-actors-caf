@@ -27,7 +27,7 @@ namespace passenger
 			[=](connect_to_controller_atom, std::string host, uint16_t port)
 			{
 				aout(this) << "\npassenger: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
-				fsm_->handle_connect(*this, host, port);
+				fsm->handle_connect(*this, host, port);
 			},
 			//[=](elevator::connect_to_controller_atom)
 			//{
@@ -37,21 +37,21 @@ namespace passenger
 			[=](elevator::call_atom, int to_floor)
 			{
 				aout(this) << "\npassenger: call_atom received, for floor: " << to_floor << endl;
-				fsm_->handle_call(*this, current_floor, to_floor);
+				fsm->handle_call(*this, current_floor, to_floor);
 			},
 			[=](elevator::quit_atom)
 			{
 				aout(this) << "\npassenger: quit_atom received" << endl;
-				fsm_->handle_quit(*this);
+				fsm->handle_quit(*this);
 			},
 			[=](elevator_arrived_atom) {
 				aout(this) << "\npassenger: elevator_arrived_atom received" << endl;
-				fsm_->handle_elevator_arrived(*this);
+				fsm->handle_elevator_arrived(*this);
 			},
 			[=](destination_arrived_atom, int floor)
 			{
 				aout(this) << "\npassenger: destination_arrived_atom received" << endl;
-				fsm_->handle_destination_arrived(*this, floor);
+				fsm->handle_destination_arrived(*this, floor);
 			},
 			[=](get_current_floor_atom)
 			{
@@ -61,7 +61,7 @@ namespace passenger
 			[=](get_current_state_name_atom)
 			{
 				//aout(this) << "\npassenger: get_state_name_atom received" << endl;
-				return fsm_->get_state_name();
+				return fsm->get_state_name();
 			}
 		};
 	}
@@ -137,10 +137,10 @@ namespace passenger
 	void passenger_actor::transition_to_state(std::shared_ptr<passenger_fsm> state)
 	{
 		//assert(this->state_ != nullptr);
-		if (this->fsm_)
-			this->fsm_->on_exit(*this);
-		this->fsm_ = state;
-		this->fsm_->on_enter(*this);
+		if (this->fsm)
+			this->fsm->on_exit(*this);
+		this->fsm = state;
+		this->fsm->on_enter(*this);
 	}
 
 	bool passenger_actor::on_call(int from_floor, int to_floor)

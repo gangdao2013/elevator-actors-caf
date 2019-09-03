@@ -68,6 +68,7 @@ namespace elevator
 		virtual void handle_connect(elevator_actor& actor, std::string host, uint16_t port);
 		virtual void handle_start(elevator_actor& actor) {};
 		virtual void handle_waypoint_received(elevator_actor& actor, int waypoint_floor) {};
+		virtual void handle_timer(elevator_actor& actor) {};
 		virtual void handle_quit(elevator_actor& actor);
 
 		virtual std::string get_state_name() { return "elevator_state"; };
@@ -101,12 +102,13 @@ namespace elevator
 	{
 		virtual void on_enter(elevator_actor& actor) override;
 		virtual void handle_start(elevator_actor& actor) override;
-		virtual std::string get_state_name() override { return "in_lobby"; };
+		virtual std::string get_state_name() override { return "idle"; };
 	};
 
 	class in_transit_state : public waypoint_accepting_state
 	{
 		virtual void on_enter(elevator_actor& actor) override;
+		virtual void handle_timer(elevator_actor& actor) override;
 		virtual std::string get_state_name() override { return "in_transit"; };
 	};
 

@@ -24,7 +24,7 @@ namespace elevator
 		aout(self) << "Usage:" << std::endl
 			<< "  quit                  : terminates the program\n"
 			<< "  connect <host> <port> : connects to a (remote) lift controller\n"
-			<< "  g <to>                : send elevator from current floor to floor <to> (0 is ground floor)" << std::endl << std::flush;
+			<< "  w <to>                : send elevator from current floor to waypoint floor <to> (0 is ground floor)" << std::endl << std::flush;
 		;
 	};
 
@@ -75,7 +75,7 @@ namespace elevator
 		{
 			[&](const std::string& cmd)
 			{
-				if (cmd == "quit")
+				if (cmd == "quit" || cmd == "q")
 				{
 					done = true;
 					self->send(elevator_, quit_atom::value);
@@ -85,9 +85,9 @@ namespace elevator
 					self->send(elevator_, elevator_arrived_atom::value);
 				}
 			},
-			[&](std::string& arg0, std::string& arg1, std::string& arg2)
+			[&](std::string& cmd, std::string& arg1, std::string& arg2)
 			{
-				if (arg0 == "connect")
+				if (cmd == "connect" || cmd == "c")
 				{
 					char* end = nullptr;
 					uint16_t lport = strtoul(arg2.c_str(), &end, 10);

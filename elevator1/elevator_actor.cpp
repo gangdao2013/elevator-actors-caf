@@ -28,19 +28,19 @@ namespace elevator
 			[=](elevator::quit_atom)
 			{
 				aout(this) << "\nelevator: quit_atom received" << endl;
-				fsm_->handle_quit(*this);
+				fsm->handle_quit(*this);
 			},
 			[=](connect_to_controller_atom, const std::string& host, uint16_t port)
 			{
 				aout(this) << "\nelevator: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
 				this->controller_host = host;
 				this->controller_port = port;
-				fsm_->handle_connect(*this, host, port);
+				fsm->handle_connect(*this, host, port);
 			},
 			[=](elevator::waypoint_atom, int waypoint_floor)
 			{
 				aout(this) << "\nelevator: waypoint_atom received, for floor: " << waypoint_floor << endl;
-				fsm_->handle_waypoint_received(*this, waypoint_floor);
+				fsm->handle_waypoint_received(*this, waypoint_floor);
 			},
 			[=](get_current_floor_atom)
 			{
@@ -50,7 +50,12 @@ namespace elevator
 			[=](get_current_state_name_atom)
 			{
 				//aout(this) << "\nelevator: get_current_state_name_atom received" << endl;
-				return fsm_->get_state_name();
+				return fsm->get_state_name();
+			},
+			[=](timer_atom)
+			{
+				aout(this) << "\nelevator: timer_atom received" << endl << std::flush;
+				return fsm->handle_timer(*this);
 			}
 		};
 	}
@@ -58,10 +63,10 @@ namespace elevator
 	// set next state, calling on_exit and on_enter functions
 	void elevator_actor::transition_to_state(std::shared_ptr<elevator_fsm> state)
 	{
-		if (this->fsm_)
-			this->fsm_->on_exit(*this);
-		this->fsm_ = state;
-		this->fsm_->on_enter(*this);
+		if (this->fsm)
+			this->fsm->on_exit(*this);
+		this->fsm = state;
+		this->fsm->on_enter(*this);
 	}
 
 	// cya
@@ -99,7 +104,7 @@ namespace elevator
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
 
-		request(mm, infinite, connect_atom::value, controller_host, controller_port)
+		request(mm, infinite, connect_atom::value, host, port)
 			.await
 			(
 				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
@@ -139,6 +144,7 @@ namespace elevator
 	{
 		if (waypoint_floor > elevator::FLOOR_MAX || waypoint_floor < elevator::FLOOR_MIN)
 			return;
+		waypoint_floors.emplace(waypoint_floor); // simple fifo behaviour for now
 	}
 
 	// no more waypoints/passengers, wait for a job from the controller
@@ -151,6 +157,7 @@ namespace elevator
 	// FSM only has idle_state calling this; it's just needed to kick off state transitions from idle if there are waypoints
 	bool elevator_actor::on_start()
 	{
+		return true;
 	}
 
 	// starting moving
@@ -163,7 +170,15 @@ namespace elevator
 	{
 	}
 
+	void elevator_actor::timer_pulse(int seconds)
+	{
+		delayed_send(this, std::chrono::seconds(seconds), elevator::timer_atom::value);
+	}
 
+	void elevator_actor::debug_msg(std::string msg)
+	{
+		aout(this) << msg << std::flush;
+	}
 
 
 }
