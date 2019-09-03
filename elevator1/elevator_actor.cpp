@@ -39,7 +39,7 @@ namespace elevator
 			},
 			[=](elevator::waypoint_atom, int waypoint_floor)
 			{
-				aout(this) << "\nelevator: waypoint_atom received, for floor: " << waypoint_floor << endl;
+				aout(this) << "\nelevator: waypoint_atom received, for floor: " << waypoint_floor << " (" << fsm->get_state_name() << ")\n" << endl;
 				fsm->handle_waypoint_received(*this, waypoint_floor);
 			},
 			[=](get_current_floor_atom)
@@ -54,7 +54,7 @@ namespace elevator
 			},
 			[=](timer_atom)
 			{
-				aout(this) << "\nelevator: timer_atom received" << endl << std::flush;
+				aout(this) << "\nelevator: timer_atom received (" << fsm->get_state_name() << ")\n" << std::flush;
 				return fsm->handle_timer(*this);
 			}
 		};

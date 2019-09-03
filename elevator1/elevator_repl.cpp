@@ -22,9 +22,10 @@ namespace elevator
 	{
 		//auto self = scoped_actor{ system_ };
 		aout(self) << "Usage:" << std::endl
-			<< "  quit                  : terminates the program\n"
-			<< "  connect <host> <port> : connects to a (remote) lift controller\n"
-			<< "  w <to>                : send elevator from current floor to waypoint floor <to> (0 is ground floor)" << std::endl << std::flush;
+			<< "  quit|q                  : terminates the program\n"
+			<< "  help|                   : help, (print this message)\n"
+			<< "  connect|c <host> <port> : connects to a (remote) lift controller\n"
+			<< "  w <f>                   : send elevator a waypoint floor <f> (0 is ground floor)" << std::endl << std::flush;
 		;
 	};
 
@@ -80,9 +81,18 @@ namespace elevator
 					done = true;
 					self->send(elevator_, quit_atom::value);
 				}
-				else if (cmd == "ea") // lift arrives
+				else if (cmd == "help" || cmd == "h") // help
+					usage(self);
+			},
+			[&](std::string& cmd, std::string& arg1)
+			{
+				if (cmd == "w")
 				{
-					self->send(elevator_, elevator_arrived_atom::value);
+					auto waypoint_floor = string_util::to_integer(arg1);
+					if (waypoint_floor.has_value())
+					{
+						self->send(elevator_, waypoint_atom::value, waypoint_floor.value());
+					}
 				}
 			},
 			[&](std::string& cmd, std::string& arg1, std::string& arg2)
@@ -93,7 +103,7 @@ namespace elevator
 					uint16_t lport = strtoul(arg2.c_str(), &end, 10);
 					if (end != arg2.c_str() + arg2.size())
 					{
-						aout(self) << R"(")" << arg2 << R"(" is not an unsigned integer)" << std::endl;
+						aout(self) << R"(")" << arg2 << R"(" is not a valid port (must be a positive integer))" << std::endl;
 					}
 					else if (lport > std::numeric_limits<uint16_t>::max())
 					{
@@ -103,17 +113,6 @@ namespace elevator
 					{
 						std::string host = arg1;
 						self->send(elevator_, connect_to_controller_atom::value, host, lport);
-					}
-				}
-			},
-			[&](std::string& cmd, std::string& arg1)
-			{
-				if (cmd == "w")
-				{
-					auto waypoint_floor = string_util::to_integer(arg1);
-					if (waypoint_floor.has_value())
-					{
-						self->send(elevator_, waypoint_atom::value, waypoint_floor.value());
 					}
 				}
 			}
@@ -128,9 +127,13 @@ namespace elevator
 			std::vector<std::string> words;
 			split(words, line, is_any_of(" "), token_compress_on);
 
-			if (!message_builder(words.begin(), words.end()).apply(eval))
-				elevator_repl::usage(self);
-
+			//if (!message_builder(words.begin(), words.end()).apply(eval))
+			//	elevator_repl::usage(self);
+			if (words.size() > 0)
+			{
+				if (!message_builder(words.begin(), words.end()).apply(eval))
+					usage(self);
+			}
 			aout(self) << "\n(" << get_current_state_name() << ") f " << get_current_floor() << "> " << std::flush;
 		}
 		return;
