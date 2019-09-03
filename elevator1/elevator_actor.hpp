@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <queue>
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
@@ -16,6 +17,13 @@
 
 namespace elevator
 {
+	enum class elevator_motion
+	{
+		stationary,
+		moving_up,
+		moving_down,
+	};
+
 	class elevator_actor : public event_based_actor
 	{
 
@@ -48,9 +56,12 @@ namespace elevator
 			strong_actor_ptr controller;
 			
 			int current_floor = 0;
-			int called_floor = 0;
+			elevator_motion current_motion = elevator_motion::stationary;
 
-			std::shared_ptr<elevator_fsm> fsm_;
+			std::queue<int> waypoint_floors;
+
+
+			std::shared_ptr<elevator_fsm> fsm;
 			void transition_to_state(std::shared_ptr<elevator_fsm> state);
 
 			// Actor event handling functions, called by FSM
@@ -63,6 +74,9 @@ namespace elevator
 			void on_in_transit();
 			void on_waypoint_arrive(int waypoint_floor);
 			void on_quit();
+
+			void timer_pulse(int seconds);
+			void debug_msg(std::string msg);
 
 	};
 }
