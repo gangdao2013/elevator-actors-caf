@@ -20,8 +20,6 @@ namespace elevator
 	const std::shared_ptr<at_waypoint_state> elevator_fsm::at_waypoint = std::make_shared<at_waypoint_state>();
 	const std::shared_ptr<quitting_state> elevator_fsm::quitting = std::make_shared<quitting_state>();
 
-
-
 	// Common quit action for all states..
 	void elevator_fsm::handle_quit(elevator_actor& actor)
 	{
@@ -95,17 +93,17 @@ namespace elevator
 		{
 		case elevator_motion::stationary:
 			// arrived at waypoint
-			actor.debug_msg("elevator: stopping at waypoint floor: " + std::to_string(actor.current_floor) + "\n");
+			actor.debug_msg("stopping at waypoint floor: " + std::to_string(actor.current_floor));
 			actor.waypoint_floors.pop();
 			actor.transition_to_state(elevator_fsm::at_waypoint);
 			break;
 		case elevator_motion::moving_up:
-			actor.debug_msg("elevator: passing floor: " + std::to_string(actor.current_floor) + "\n");
+			actor.debug_msg("passing floor: " + std::to_string(actor.current_floor));
 			actor.current_floor++;
 			actor.timer_pulse(elevator::FLOOR_TRANSIT_TIME_SEC);
 			break;
 		case elevator_motion::moving_down:
-			actor.debug_msg("elevator: passing floor: " + std::to_string(actor.current_floor) + "\n");
+			actor.debug_msg("passing floor: " + std::to_string(actor.current_floor));
 			actor.current_floor--;
 			actor.timer_pulse(elevator::FLOOR_TRANSIT_TIME_SEC);
 			break;
@@ -124,11 +122,11 @@ namespace elevator
 		if (actor.waypoint_floors.size() == 0)
 		{
 			actor.current_motion = elevator_motion::stationary;
-			actor.debug_msg("elevator: no more waypoints, staying idle at floor: " + std::to_string(actor.current_floor) + "\n");
+			actor.debug_msg("no more waypoints, staying idle at floor: " + std::to_string(actor.current_floor));
 			actor.transition_to_state(elevator_fsm::idle);
 			return;
 		} else {
-			actor.debug_msg("elevator: more waypoints to go, doors closing!\n");
+			actor.debug_msg("more waypoints to go, doors closing!");
 			actor.transition_to_state(elevator_fsm::in_transit);
 		}
 	}

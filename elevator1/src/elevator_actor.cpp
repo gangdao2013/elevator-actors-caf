@@ -27,19 +27,19 @@ namespace elevator
 		return {
 			[=](elevator::quit_atom)
 			{
-				aout(this) << "\nelevator: quit_atom received" << endl;
+				debug_msg("quit_atom received");
 				fsm->handle_quit(*this);
 			},
 			[=](connect_to_controller_atom, const std::string& host, uint16_t port)
 			{
-				aout(this) << "\nelevator: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
+				debug_msg("connect_to_controller_atom received, host: " + host + ", port: " + std::to_string(port));
 				this->controller_host = host;
 				this->controller_port = port;
 				fsm->handle_connect(*this, host, port);
 			},
 			[=](elevator::waypoint_atom, int waypoint_floor)
 			{
-				aout(this) << "\nelevator: waypoint_atom received, for floor: " << waypoint_floor << " (" << fsm->get_state_name() << ")\n" << endl;
+				debug_msg("waypoint_atom received, for floor: " + std::to_string(waypoint_floor));
 				fsm->handle_waypoint_received(*this, waypoint_floor);
 			},
 			[=](get_current_floor_atom)
@@ -54,7 +54,7 @@ namespace elevator
 			},
 			[=](timer_atom)
 			{
-				aout(this) << "\nelevator: timer_atom received (" << fsm->get_state_name() << ")\n" << std::flush;
+				debug_msg("timer_atom received");
 				return fsm->handle_timer(*this);
 			}
 		};
@@ -85,7 +85,7 @@ namespace elevator
 			{
 				if (dm.source == controller)
 				{
-					aout(this) << "\nelevator: lost connection to elevator controller, please reconnect or quit" << endl;
+					debug_msg("lost connection to elevator controller, please reconnect or quit");
 					this->controller = nullptr;
 				}
 			});
@@ -111,17 +111,15 @@ namespace elevator
 				{
 					if (!controller)
 					{
-						aout(this) << R"(*** no controller found at ")" << controller_host << R"(":)"
-							<< controller_port << endl;
+						debug_msg(R"(>>> no controller found at ")" + host + R"(":)" + std::to_string(port) + " <<<");
 						return;
 					}
 					if (!ifs.empty())
 					{
-						aout(this) << R"(*** typed actor found at ")" << controller_host << R"(":)"
-							<< controller_port << ", but expected an untyped actor " << endl;
+						debug_msg(R"(>>> typed actor found at ")" + host + R"(":)" + std::to_string(port) + ", but expected an untyped actor <<<");
 						return;
 					}
-					aout(this) << "*** successfully connected to controller" << endl;
+					debug_msg("successfully connected to controller");
 					controller_host.assign(host);
 					controller_port = port;
 					this->controller = controller;
@@ -132,8 +130,7 @@ namespace elevator
 				},
 				[host, port, this](const error& err)
 				{
-					aout(this) << R"(*** cannot connect to ")" << controller_host << R"(":)"
-						<< controller_port << " => " << this->system().render(err) << endl;
+					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(controller_port) + " => " + this->system().render(err) + " <<<");
 					transition_to_state(elevator_fsm::disconnected);
 				}
 				);
@@ -177,7 +174,7 @@ namespace elevator
 
 	void elevator_actor::debug_msg(std::string msg)
 	{
-		aout(this) << msg << std::flush;
+		aout(this) << "\n[elevator][" << name << "][" << fsm->get_state_name() << "][" << current_floor << "]: " << msg << "\n" << std::flush;
 	}
 
 
