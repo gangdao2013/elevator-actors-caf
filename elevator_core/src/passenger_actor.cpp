@@ -117,7 +117,7 @@ namespace passenger
 					this->controller = controller;
 					auto controller_hdl = actor_cast<actor>(controller);
 					this->monitor(controller_hdl);
-					//this->send(controller_hdl, elevator::register_passenger_atom::value, this);
+					this->send(controller_hdl, elevator::register_passenger_atom::value);
 					//result = true;
 					transition_to_state(passenger_fsm::in_lobby);
 				},

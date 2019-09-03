@@ -127,7 +127,7 @@ namespace elevator
 					this->controller = controller;
 					auto controller_hdl = actor_cast<actor>(controller);
 					this->monitor(controller_hdl);
-					//this->send(controller_hdl, elevator::register_elevator_atom::value, this);
+					this->send(controller_hdl, elevator::register_elevator_atom::value);
 					transition_to_state(elevator_fsm::idle);
 				},
 				[host, port, this](const error& err)
@@ -165,8 +165,10 @@ namespace elevator
 	}
 
 	// at a floor, doors opening, picking up & dropping off passengers, 
-	void elevator_actor::on_waypoint_arrive(int waypoint_floor)
+	void elevator_actor::on_waypoint_arrive()
 	{
+		// let the controller know we've arrived, so it can inform the passenger(s)
+		send(controller, elevator::waypoint_arrived_atom::value, current_floor);
 	}
 
 	void elevator_actor::timer_pulse(int seconds)

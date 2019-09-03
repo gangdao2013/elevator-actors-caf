@@ -12,8 +12,10 @@ namespace controller
 {
 	struct controller_state
 	{
-		strong_actor_ptr lift;
+		strong_actor_ptr elevator;
 		strong_actor_ptr passenger;
+		int passenger_from_floor;
+		int passenger_to_floor;
 	};
 
 	behavior controller_actor(stateful_actor<controller_state>* self);

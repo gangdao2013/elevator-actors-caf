@@ -75,7 +75,7 @@ namespace elevator
 			void on_idle();
 			bool on_start();
 			void on_in_transit();
-			void on_waypoint_arrive(int waypoint_floor);
+			void on_waypoint_arrive();
 			void on_quit();
 
 			void timer_pulse(int seconds);

@@ -44,11 +44,13 @@ namespace elevator
 
 			if (words.size() > 0)
 			{
-				if (!message_builder(words.begin(), words.end()).apply(eval))
-					usage();
+				// send the vector of strings to the handler for evaluation,
+				// handler will attempt to match on each lambda, and run associated code, e.g. sending a message to an actor
+				if (!message_builder(words.begin(), words.end()).apply(eval)) 
+					usage(); // nothing matched, so prompt the user with help again
 			}
-
-			aout(self) << get_prompt() << std::flush;
+			if(!quit)
+				aout(self) << get_prompt() << std::flush;
 		}
 		return;
 	}

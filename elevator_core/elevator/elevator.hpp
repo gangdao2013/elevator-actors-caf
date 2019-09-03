@@ -30,6 +30,7 @@ namespace elevator
 	
 	using register_elevator_atom = atom_constant<atom("r_e")>;
 	using waypoint_atom = atom_constant<atom("w")>;
+	using waypoint_arrived_atom = atom_constant<atom("wa")>;
 
 	using timer_atom = atom_constant<atom("t")>;
 

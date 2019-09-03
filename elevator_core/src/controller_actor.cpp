@@ -22,26 +22,44 @@ namespace controller
 	{
 		return
 		{
-			[=](register_elevator_atom, strong_actor_ptr lift) {
+			[=](register_elevator_atom) {
 				aout(self) << "\nregister_elevator_atom received" << endl;
-				self->state.lift = lift;
-				self->link_to(lift);
+				auto elevator = self->current_sender();
+				self->state.elevator = elevator;
+				self->monitor(elevator);
 			},
-			[=](register_passenger_atom, strong_actor_ptr passenger) {
+			[=](register_passenger_atom) {
+				auto passenger = self->current_sender();
 				aout(self) << "\nregister_passenger_atom received" << endl;
 				self->state.passenger = passenger;
-				self->link_to(passenger);
+				self->monitor(passenger);
 			},
 			[=](call_atom, int from_floor, int to_floor) {
-				//self->send(self->state.lift, up_atom::value);
 				aout(self) << "\ncontroller: call_atom received, from_floor: " << from_floor << ", to_floor: " << to_floor << endl;
+				
+				auto passenger = self->current_sender();
+				self->state.passenger_from_floor = from_floor;
+				self->state.passenger_to_floor = to_floor;
+				if (self->state.elevator)
+				{
+					self->send(self->state.elevator, elevator::waypoint_atom::value, from_floor);
+					self->send(self->state.elevator, elevator::waypoint_atom::value, to_floor);
+				}
+				
 			},
-			//[=](down_atom) {
-			//	self->send(self->state.lift, down_atom::value);
-			//},
-			//[=](result_atom, string result) {
-			//	aout(self) << "\ncontroller, result received: " << result << endl;
-			//},
+			[=](waypoint_arrived_atom, int floor)
+			{
+
+				aout(self) << "\ncontroller: waypoint_arrived_atom received, floor: " << floor << endl;
+				if(self->state.passenger)
+				{
+					if(floor == self->state.passenger_from_floor)
+						self->send(self->state.passenger, elevator::elevator_arrived_atom::value);
+					else if(floor == self->state.passenger_to_floor)
+						self->send(self->state.passenger, elevator::destination_arrived_atom::value, floor);
+				}
+
+			},
 			[&](const exit_msg& ex) {
 				self->quit();
 			}

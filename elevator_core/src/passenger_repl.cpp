@@ -22,7 +22,7 @@ namespace passenger
 	{
 		aout(self) << "Usage:" << std::endl
 			<< "  quit|q                  : terminates the program\n"
-			<< "  connect|c <host> <port> : connects to a (remote) lift controller\n"
+			<< "  connect <host> <port> : connects to a (remote) lift controller\n"
 			<< "  c <to>                  : call elevator from current floor to floor <to> (0 is ground floor)" << std::endl << std::flush;
 			;
 	};
@@ -105,7 +105,7 @@ namespace passenger
 			},
 			[&](std::string& cmd, std::string& arg1, std::string& arg2)
 			{
-				if (cmd == "connect" || cmd == "c")
+				if (cmd == "connect")
 				{
 					char* end = nullptr;
 					uint16_t lport = strtoul(arg2.c_str(), &end, 10);
