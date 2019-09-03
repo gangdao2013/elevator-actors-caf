@@ -1,9 +1,10 @@
 #pragma once
 
 #include <iostream>
-#include "passenger_actor.hpp"
-#include "passenger_fsm.hpp"
 #include "caf/all.hpp"
+
+#include "elevator/passenger_actor.hpp"
+#include "elevator/passenger_fsm.hpp"
 
 namespace passenger {
 

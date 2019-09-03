@@ -9,9 +9,9 @@
 #include "caf/io/all.hpp"
 #include "string_util.hpp"
 
-#include "elevator.hpp"
-#include "elevator_fsm.hpp"
-#include "elevator_repl.hpp"
+#include "elevator/elevator.hpp"
+#include "elevator/elevator_fsm.hpp"
+#include "elevator/elevator_repl.hpp"
 
 #include <cassert>
 

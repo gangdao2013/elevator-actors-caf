@@ -1,18 +1,19 @@
 #pragma once
+
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "elevator.hpp"
 
-#include "repl.hpp"
-#include "elevator_actor.hpp"
+#include "elevator/elevator.hpp"
+#include "elevator/repl.hpp"
 
 namespace elevator
 {
-	class elevator_repl: public repl
+	class elevator_repl: public elevator::repl
 	{
 	public:
 
-		elevator_repl(actor_system& system, const actor& actor) : repl(system, actor)
+		elevator_repl(actor_system& system, const actor& actor) : repl(system, actor),
+			elevator_floor{ 0 }
 		{}
 
 		virtual void usage() override;

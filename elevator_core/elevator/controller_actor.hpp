@@ -3,7 +3,7 @@
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
 
-#include "elevator.hpp"
+#include "elevator/elevator.hpp"
 
 
 using namespace caf;

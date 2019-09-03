@@ -5,9 +5,9 @@
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
 
-#include "elevator.hpp"
-#include "controller_actor.hpp"
-#include "passenger_actor.hpp"
+#include "elevator/elevator.hpp"
+#include "elevator/controller_actor.hpp"
+#include "elevator/passenger_actor.hpp"
 
 using namespace caf;
 using namespace std;

@@ -5,10 +5,10 @@
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "string_util.hpp"
-#include "elevator.hpp"
+#include "elevator/string_util.hpp"
+#include "elevator/elevator.hpp"
 
-#include "repl.hpp"
+#include "elevator/repl.hpp"
 
 
 using namespace caf;

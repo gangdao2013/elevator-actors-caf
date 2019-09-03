@@ -2,9 +2,9 @@
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "elevator.hpp"
-#include "passenger_fsm.hpp"
-#include "passenger_repl.hpp"
+#include "elevator/elevator.hpp"
+#include "elevator/passenger_fsm.hpp"
+#include "elevator/passenger_repl.hpp"
 
 namespace passenger
 {
@@ -49,8 +49,8 @@ namespace passenger
 
 		bool on_initialise();
 		void on_connect(const std::string& host, uint16_t port);
-		bool on_call(int from_floor, int to_floor);
-		bool on_arrive(int arrived_at_floor);
+		void on_call(int from_floor, int to_floor);
+		void on_arrive(int arrived_at_floor);
 		void on_lobby();
 		void on_elevator();
 		

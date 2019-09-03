@@ -2,8 +2,6 @@
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "elevator.hpp"
-
 
 namespace elevator
 {

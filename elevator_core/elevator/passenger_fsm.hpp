@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-//#include "passenger_actor.hpp"
+#include "elevator/passenger_actor.hpp"
 
 namespace passenger
 {

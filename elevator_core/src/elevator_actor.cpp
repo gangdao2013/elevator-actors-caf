@@ -4,12 +4,12 @@
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "string_util.hpp"
 
-#include "elevator.hpp"
+#include "elevator/string_util.hpp"
+#include "elevator/elevator.hpp"
 
-#include "elevator_actor.hpp"
-#include "elevator_fsm.hpp"
+#include "elevator/elevator_actor.hpp"
+#include "elevator/elevator_fsm.hpp"
 
 #include <cassert>
 

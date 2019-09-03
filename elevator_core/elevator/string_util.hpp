@@ -1,9 +1,10 @@
 #pragma once
 #include <optional>
 #include <functional>
-#include "caf/all.hpp"
 #include <string>
 #include <optional>
+
+#include "caf/all.hpp"
 
 namespace string_util
 {

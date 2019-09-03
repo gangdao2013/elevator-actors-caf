@@ -4,12 +4,12 @@
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
-#include "string_util.hpp"
+#include "elevator/string_util.hpp"
 
-#include "elevator.hpp"
+#include "elevator/elevator.hpp"
 
-#include "passenger_actor.hpp"
-#include "passenger_fsm.hpp"
+#include "elevator/passenger_actor.hpp"
+#include "elevator/passenger_fsm.hpp"
 
 #include <cassert>
 
@@ -140,26 +140,26 @@ namespace passenger
 		this->fsm->on_enter(*this);
 	}
 
-	bool passenger_actor::on_call(int from_floor, int to_floor)
+	void passenger_actor::on_call(int from_floor, int to_floor)
 	{
 		if (from_floor > elevator::FLOOR_MAX 
 			|| from_floor < elevator::FLOOR_MIN
 			|| to_floor > elevator::FLOOR_MAX
 			|| to_floor < elevator::FLOOR_MIN
 			)
-			return false;
+			return;
 
 		if (controller)
 		{
 			send(controller, elevator::call_atom::value, from_floor, to_floor);
-			return true;
 		}
-		return false;
 	}
 
-	bool passenger_actor::on_arrive(int arrived_at_floor)
+	void passenger_actor::on_arrive(int arrived_at_floor)
 	{
-		return true;
+		if (arrived_at_floor > elevator::FLOOR_MAX || arrived_at_floor < elevator::FLOOR_MIN)
+			return;
+		current_floor = arrived_at_floor;
 	}
 
 	void passenger_actor::on_lobby()

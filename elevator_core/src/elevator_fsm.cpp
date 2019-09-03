@@ -1,7 +1,7 @@
 #pragma once
 
-#include "elevator_actor.hpp"
-#include "elevator_fsm.hpp"
+#include "elevator/elevator_actor.hpp"
+#include "elevator/elevator_fsm.hpp"
 
 namespace elevator
 {
