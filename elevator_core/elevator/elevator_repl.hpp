@@ -22,11 +22,11 @@ namespace elevator
 
 		int get_current_floor();
 		std::string get_current_state_name();
-		std::string get_name();
+		int get_elevator_number ();
 
 	protected:
 		std::string elevator_state;
-		std::string elevator_name;
+		int elevator_number;
 		int elevator_floor;
 
 	};

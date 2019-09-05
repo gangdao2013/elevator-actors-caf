@@ -29,7 +29,7 @@ void start_passenger(actor_system& system, const elevator::config& cfg)
 
 void start_elevator(actor_system& system, const elevator::config& cfg)
 {
-	auto elevator = system.spawn<elevator::elevator_actor>("1");
+	auto elevator = system.spawn<elevator::elevator_actor>(1);
 
 	if (!cfg.host.empty() && cfg.port > 0)
 		anon_send(elevator, elevator::connect_to_controller_atom::value, cfg.host, cfg.port);

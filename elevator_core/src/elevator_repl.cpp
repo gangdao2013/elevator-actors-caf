@@ -30,21 +30,21 @@ namespace elevator
 	}
 	std::string elevator_repl::get_prompt()
 	{
-		return "[" + get_name() + "][" + get_current_state_name() + "][" + std::to_string(get_current_floor()) + "]> ";
+		return "[" + std::to_string(get_elevator_number()) + "][" + get_current_state_name() + "][" + std::to_string(get_current_floor()) + "]> ";
 	}
 
-	string elevator_repl::get_name()
+	int elevator_repl::get_elevator_number()
 	{
-		if (elevator_name != "")
-			return elevator_name;
+		if (elevator_number != 0)
+			return elevator_number;
 
-		self->request(actor_, infinite, elevator::get_name_atom::value)
+		self->request(actor_, infinite, elevator::get_elevator_number_atom::value)
 			.receive
 			(
-				[&](string name) { elevator_name = name; },
+				[&](int number) { elevator_number = number; },
 				[&](error& err) { aout(self) << "error: " << self->system().render(err) << std::endl; }
 		);
-		return elevator_name;
+		return elevator_number;
 	}
 
 	int elevator_repl::get_current_floor()

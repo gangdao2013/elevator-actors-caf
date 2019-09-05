@@ -39,10 +39,10 @@ namespace elevator
 		friend class quitting_state;
 
 		public:
-			elevator_actor(actor_config& cfg, std::string name) :
+			elevator_actor(actor_config& cfg, int elevator_number) :
 				event_based_actor(cfg)
 				, cfg_{ cfg }
-				, name {name}
+				,  elevator_number{elevator_number}
 			{
 				transition_to_state(elevator_fsm::initalising);
 			}
@@ -52,7 +52,7 @@ namespace elevator
 		private:
 
 			actor_config& cfg_;
-			std::string name;
+			int elevator_number;
 
 			std::string controller_host;
 			uint16_t controller_port{ 0 };
@@ -80,6 +80,9 @@ namespace elevator
 
 			void timer_pulse(int seconds);
 			void debug_msg(std::string msg);
+
+			// Destructor; all child objects 
+
 
 	};
 }

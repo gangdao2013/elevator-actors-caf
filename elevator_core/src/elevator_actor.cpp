@@ -50,9 +50,9 @@ namespace elevator
 			{
 				return fsm->get_state_name();
 			},
-			[=](get_name_atom)
+			[=](get_elevator_number_atom)
 			{
-				return name;
+				return elevator_number;
 			},
 			[=](timer_atom)
 			{
@@ -146,9 +146,11 @@ namespace elevator
 		waypoint_floors.emplace(waypoint_floor); // simple fifo behaviour for now
 	}
 
-	// no more waypoints/passengers, wait for a job from the controller
+	// no more waypoints/passengers, let the controller know and then wait for a job from the controller
 	void elevator_actor::on_idle()
 	{
+		send(controller, elevator_idle_atom::value, elevator_number);
+
 	}
 
 	// start the lift if there are any waypoints

@@ -81,7 +81,7 @@ namespace passenger
 				} 
 				else if (cmd == "ea") // lift arrives
 				{
-					self->send(actor_, elevator_arrived_atom::value);
+					self->send(actor_, embark_atom::value);
 				}
 			},
 			[&](std::string& cmd, std::string& arg1)
@@ -99,7 +99,7 @@ namespace passenger
 					auto floor = string_util::to_integer(arg1);
 					if (floor.has_value())
 					{
-						self->send(actor_, destination_arrived_atom::value, floor.value());
+						self->send(actor_, disembark_atom::value, floor.value());
 					}
 				}
 			},
