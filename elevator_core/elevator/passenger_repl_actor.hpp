@@ -4,16 +4,17 @@
 #include "caf/io/all.hpp"
 
 #include "elevator/elevator.hpp"
-#include "elevator/repl.hpp"
+#include "elevator/repl_actor.hpp"
 
 namespace passenger
 {
-	class passenger_repl: public elevator::repl
+	class passenger_repl_actor: public elevator::repl_actor
 	{
 	public:
 
-		passenger_repl(actor_system& system, const actor& actor) : repl(system, actor)
-		{}
+		passenger_repl_actor(actor_config& cfg, const actor& target_actor, std::string repl_id) 
+			: repl_actor(cfg, target_actor, repl_id)
+		{ }
 		
 		virtual void usage() override;
 		virtual std::string get_prompt() override;

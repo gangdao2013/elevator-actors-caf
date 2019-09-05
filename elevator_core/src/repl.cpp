@@ -8,7 +8,7 @@
 #include "elevator/string_util.hpp"
 #include "elevator/elevator.hpp"
 
-#include "elevator/repl.hpp"
+#include "elevator/repl_actor.hpp"
 
 
 using namespace caf;
@@ -16,21 +16,36 @@ using namespace caf;
 namespace elevator
 {
 
-	void repl::send_message(message msg)
+	behavior repl_actor::make_behavior()
+	{
+		return 
+		{
+		[=](quit_atom)
+		{
+			aout(this) << "\n: quit_atom received" << endl;
+			fsm->handle_quit(*this);
+		},
+		[=](message_atom)
+		{
+
+		};
+	}
+
+	void repl_actor::send_message(message msg)
 	{
 		auto self = scoped_actor{ system_ };
 		self->send(actor_, msg);
 		return;
 	}
 
-	void repl::start_repl()
+	void repl_actor::start_repl()
 	{
 
 		auto self = scoped_actor{ system_ };
 		message_handler eval = get_eval();
 
 		usage();
-	
+
 		std::string line;
 
 		aout(self) << get_prompt() << std::flush;

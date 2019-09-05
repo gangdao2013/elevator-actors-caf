@@ -35,6 +35,12 @@ namespace elevator
 
 	using get_name_atom = atom_constant<atom("g_n")>;
 
+	using message_atom = atom_constant<atom("m")>;
+	using subscribe_atom = atom_constant<atom("a")>;
+	using unsubscribe_atom = atom_constant<atom("a")>;
+	using start_atom = atom_constant<atom("s")>;
+	using command_atom = atom_constant<atom("c")>;
+
 
 	using quit_atom = atom_constant<atom("quit")>;
 
@@ -55,5 +61,12 @@ namespace elevator
 				.add(elevator_mode, "elevator,E", "enable elevator mode")
 				;
 		}
+	};
+
+	// used for observables/observers
+	enum class elevator_observable_event_type
+	{
+		message,
+		debug_message
 	};
 }

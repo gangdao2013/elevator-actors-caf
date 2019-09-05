@@ -4,7 +4,7 @@
 #include "caf/io/all.hpp"
 #include "elevator/elevator.hpp"
 #include "elevator/passenger_fsm.hpp"
-#include "elevator/passenger_repl.hpp"
+#include "elevator/passenger_repl_actor.hpp"
 
 namespace passenger
 {
@@ -55,6 +55,12 @@ namespace passenger
 		void on_elevator();
 		
 		void on_quit();
+
+		void debug_msg(std::string msg);
+
+		void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
+		std::map<std::string, strong_actor_ptr> debug_message_subscribers;
+
 	};
 
 

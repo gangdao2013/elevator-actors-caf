@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
@@ -58,6 +59,12 @@ namespace elevator
 			{
 				debug_msg("timer_atom received");
 				return fsm->handle_timer(*this);
+			},
+			[=](subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
+			{
+				add_subscriber(current_sender(), subscriber_key, event_type);
+				debug_msg("subscribe_atom received");
+
 			}
 		};
 	}
@@ -132,7 +139,7 @@ namespace elevator
 				},
 				[host, port, this](const error& err)
 				{
-					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(controller_port) + " => " + this->system().render(err) + " <<<");
+					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(port) + " => " + this->system().render(err) + " <<<");
 					transition_to_state(elevator_fsm::disconnected);
 				}
 				);
@@ -165,7 +172,7 @@ namespace elevator
 	}
 
 	// at a floor, doors opening, picking up & dropping off passengers, 
-	void elevator_actor::on_waypoint_arrive(int waypoint_floor)
+	void elevator_actor::on_waypoint_arrive()
 	{
 	}
 
@@ -176,7 +183,35 @@ namespace elevator
 
 	void elevator_actor::debug_msg(std::string msg)
 	{
-		aout(this) << "\n[elevator][" << name << "][" << fsm->get_state_name() << "][" << current_floor << "]: " << msg << "\n" << std::flush;
+		string subscriber_msg = "[elevator][" + name + "][" + fsm->get_state_name() + "][" + std::to_string(current_floor) + "]: " + msg;
+		for (auto kv : debug_message_subscribers)
+		{
+			auto recipient = actor_cast<actor>(kv.second);
+			send(recipient, message_atom::value, subscriber_msg);
+		}
+
+	}
+	void elevator_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
+	{
+		// add subscriber to relevant subscriber map
+		switch (event_type)
+		{
+		case elevator_observable_event_type::debug_message:
+		{
+			// nb: deliberately replace if key is the same, need to destroy any existing ref
+			auto existing_ptr = debug_message_subscribers[subscriber_key];
+			if (existing_ptr)
+			{
+				auto handle = actor_cast<actor>(existing_ptr);
+				destroy(handle);
+			}
+			//debug_message_subscribers.insert(std::make_pair<string, const actor&>(subscriber_key, subscriber));
+			debug_message_subscribers[subscriber_key] = std::move(subscriber);
+		}
+		break;
+		default:
+			break;
+		};
 	}
 
 

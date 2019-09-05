@@ -3,6 +3,7 @@
 #include "caf/io/all.hpp"
 
 #include "elevator/elevator.hpp"
+
 #include "elevator/controller_actor.hpp"
 #include "elevator/passenger_actor.hpp"
 #include "elevator/elevator_actor.hpp"
@@ -20,11 +21,11 @@ void start_passenger(actor_system& system, const elevator::config& cfg)
 		<< R"(please use "connect <host> <port>" before trying to use the elevator)"
 		<< std::endl;
 
-	passenger::passenger_repl repl(system, passenger);
-	repl.start_repl(); // will run until quit entered
+	auto passenger_repl = system.spawn<passenger::passenger_repl_actor>(passenger, "passenger_1");
+	anon_send(passenger_repl, elevator::start_atom::value);
 
 	auto self = scoped_actor{ system };
-	self->wait_for(passenger); // will block until passenger dies
+	self->wait_for(passenger, passenger_repl); // will block until passenger and passenger_reply die
 }
 
 void start_elevator(actor_system& system, const elevator::config& cfg)
@@ -38,11 +39,11 @@ void start_elevator(actor_system& system, const elevator::config& cfg)
 		<< R"(please use "connect <host> <port>" before trying to use the elevator)"
 		<< std::endl;
 
-	elevator::elevator_repl repl(system, elevator);
-	repl.start_repl(); // will run until quit entered
+	auto elevator_repl = system.spawn<elevator::elevator_repl_actor>(elevator, "elevator_1");
+	anon_send(elevator_repl, elevator::start_atom::value);
 
 	auto self = scoped_actor{ system };
-	self->wait_for(elevator); // will block until passenger dies
+	self->wait_for(elevator, elevator_repl); // will block until elevator and elevator_repl die
 }
 
 void start_controller(actor_system& system, const elevator::config& cfg) {

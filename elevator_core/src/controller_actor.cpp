@@ -36,6 +36,19 @@ namespace controller
 				//self->send(self->state.lift, up_atom::value);
 				aout(self) << "\ncontroller: call_atom received, from_floor: " << from_floor << ", to_floor: " << to_floor << endl;
 			},
+			[=](quit_atom)
+			{
+				aout(self) << "\controller: quit_atom received" << endl;
+				self->quit();
+			},
+			[=](get_current_state_name_atom)
+			{
+				return "running";
+			},
+			[=](get_name_atom)
+			{
+				return "controller";
+			},
 			//[=](down_atom) {
 			//	self->send(self->state.lift, down_atom::value);
 			//},

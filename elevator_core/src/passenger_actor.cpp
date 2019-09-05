@@ -17,7 +17,6 @@ using namespace caf;
 using namespace std;
 using namespace elevator;
 
-
 namespace passenger
 {
 
@@ -29,17 +28,18 @@ namespace passenger
 				aout(this) << "\npassenger: connect_to_controller_atom received, host: " << host << ", port: " << port << endl;
 				fsm->handle_connect(*this, host, port);
 			},
-			[=](elevator::call_atom, int to_floor)
+			[=](call_atom, int to_floor)
 			{
 				aout(this) << "\npassenger: call_atom received, for floor: " << to_floor << endl;
 				fsm->handle_call(*this, current_floor, to_floor);
 			},
-			[=](elevator::quit_atom)
+			[=](quit_atom)
 			{
 				aout(this) << "\npassenger: quit_atom received" << endl;
 				fsm->handle_quit(*this);
 			},
-			[=](elevator_arrived_atom) {
+			[=](elevator_arrived_atom)
+			{
 				aout(this) << "\npassenger: elevator_arrived_atom received" << endl;
 				fsm->handle_elevator_arrived(*this);
 			},
@@ -60,6 +60,45 @@ namespace passenger
 			{
 				return name;
 			},
+			[=](elevator::subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
+			{
+				add_subscriber(current_sender(), subscriber_key, event_type);
+				debug_msg("subscribe_atom received");
+			}
+		};
+	}
+
+
+	void passenger_actor::debug_msg(std::string msg)
+	{
+		string subscriber_msg = "[passenger][" + name + "][" + fsm->get_state_name() + "][" + std::to_string(current_floor) + "]: " + msg;
+		for (auto kv : debug_message_subscribers)
+		{
+			auto recipient = actor_cast<actor>(kv.second);
+			send(recipient, message_atom::value, subscriber_msg);
+		}
+
+	}
+	void passenger_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
+	{
+		// add subscriber to relevant subscriber map
+		switch (event_type)
+		{
+		case elevator_observable_event_type::debug_message:
+		{
+			// nb: deliberately replace if key is the same, need to destroy any existing ref
+			auto existing_ptr = debug_message_subscribers[subscriber_key];
+			if (existing_ptr)
+			{
+				auto handle = actor_cast<actor>(existing_ptr);
+				destroy(handle);
+			}
+			//debug_message_subscribers.insert(std::make_pair<string, const actor&>(subscriber_key, subscriber));
+			debug_message_subscribers[subscriber_key] = std::move(subscriber);
+		}
+		break;
+		default:
+			break;
 		};
 	}
 
@@ -67,6 +106,7 @@ namespace passenger
 	{
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
+
 
 	bool passenger_actor::on_initialise()
 	{
@@ -84,7 +124,7 @@ namespace passenger
 		return true;
 	}
 
-	void passenger_actor::on_connect(const std::string &host, uint16_t port)
+	void passenger_actor::on_connect(const std::string& host, uint16_t port)
 	{
 		//bool result = false;
 
@@ -99,14 +139,16 @@ namespace passenger
 		request(mm, infinite, connect_atom::value, host, port)
 			.await
 			(
-				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs) 
+				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
 				{
-					if (!controller) {
+					if (!controller)
+					{
 						aout(this) << R"(*** no controller found at ")" << host << R"(":)"
 							<< controller_port << endl;
 						return;
 					}
-					if (!ifs.empty()) {
+					if (!ifs.empty())
+					{
 						aout(this) << R"(*** typed actor found at ")" << host << R"(":)"
 							<< controller_port << ", but expected an untyped actor " << endl;
 						return;
@@ -121,13 +163,13 @@ namespace passenger
 					//result = true;
 					transition_to_state(passenger_fsm::in_lobby);
 				},
-				[host, port, this](const error& err) 
+				[host, port, this](const error& err)
 				{
 					aout(this) << R"(*** cannot connect to ")" << host << R"(":)"
 						<< port << " => " << this->system().render(err) << endl;
 					transition_to_state(passenger_fsm::disconnected);
 				}
-			);
+				);
 		//return result;
 	}
 
@@ -142,7 +184,7 @@ namespace passenger
 
 	void passenger_actor::on_call(int from_floor, int to_floor)
 	{
-		if (from_floor > elevator::FLOOR_MAX 
+		if (from_floor > elevator::FLOOR_MAX
 			|| from_floor < elevator::FLOOR_MIN
 			|| to_floor > elevator::FLOOR_MAX
 			|| to_floor < elevator::FLOOR_MIN

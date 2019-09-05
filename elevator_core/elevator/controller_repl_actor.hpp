@@ -4,30 +4,31 @@
 #include "caf/io/all.hpp"
 
 #include "elevator/elevator.hpp"
-#include "elevator/repl.hpp"
+#include "elevator/repl_actor.hpp"
 
-namespace elevator
+namespace controller
 {
-	class elevator_repl: public elevator::repl
+	class controller_repl_actor : public elevator::repl_actor
 	{
 	public:
 
-		elevator_repl(actor_system& system, const actor& actor) : repl(system, actor),
-			elevator_floor{ 0 }
-		{}
+		controller_repl_actor(actor_config& cfg, const actor& target_actor, std::string repl_id)
+			: repl_actor(cfg, target_actor, repl_id)
+		{
+		}
 
 		virtual void usage() override;
 		virtual std::string get_prompt() override;
 		virtual caf::message_handler get_eval();
 
+		std::string controller_name;
+		std::string controller_state;
+
+
 		int get_current_floor();
 		std::string get_current_state_name();
 		std::string get_name();
 
-	protected:
-		std::string elevator_state;
-		std::string elevator_name;
-		int elevator_floor;
 
 	};
 

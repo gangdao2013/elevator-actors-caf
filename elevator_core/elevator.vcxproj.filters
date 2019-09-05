@@ -12,24 +12,26 @@
     <ClCompile Include="src\controller_actor.cpp" />
     <ClCompile Include="src\elevator_actor.cpp" />
     <ClCompile Include="src\elevator_fsm.cpp" />
-    <ClCompile Include="src\elevator_repl.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\passenger_actor.cpp" />
     <ClCompile Include="src\passenger_fsm.cpp" />
-    <ClCompile Include="src\passenger_repl.cpp" />
     <ClCompile Include="src\string_util.cpp" />
-    <ClCompile Include="src\repl.cpp" />
+    <ClCompile Include="src\repl_actor.cpp" />
+    <ClCompile Include="src\passenger_repl_actor.cpp" />
+    <ClCompile Include="src\elevator_repl_actor.cpp" />
+    <ClCompile Include="src\controller_repl_actor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="elevator\controller_actor.hpp" />
     <ClInclude Include="elevator\elevator.hpp" />
     <ClInclude Include="elevator\elevator_actor.hpp" />
     <ClInclude Include="elevator\elevator_fsm.hpp" />
-    <ClInclude Include="elevator\elevator_repl.hpp" />
     <ClInclude Include="elevator\passenger_actor.hpp" />
     <ClInclude Include="elevator\passenger_fsm.hpp" />
-    <ClInclude Include="elevator\passenger_repl.hpp" />
-    <ClInclude Include="elevator\repl.hpp" />
     <ClInclude Include="elevator\string_util.hpp" />
+    <ClInclude Include="elevator\repl_actor.hpp" />
+    <ClInclude Include="elevator\passenger_repl_actor.hpp" />
+    <ClInclude Include="elevator\elevator_repl_actor.hpp" />
+    <ClInclude Include="elevator\controller_repl_actor.hpp" />
   </ItemGroup>
 </Project>

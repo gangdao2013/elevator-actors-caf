@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <queue>
+#include <map>
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
@@ -11,7 +12,7 @@
 
 #include "elevator/elevator.hpp"
 #include "elevator/elevator_fsm.hpp"
-#include "elevator/elevator_repl.hpp"
+#include <elevator\elevator_repl_actor.hpp>
 
 #include <cassert>
 
@@ -63,7 +64,6 @@ namespace elevator
 
 			std::queue<int> waypoint_floors;
 
-
 			std::shared_ptr<elevator_fsm> fsm;
 			void transition_to_state(std::shared_ptr<elevator_fsm> state);
 
@@ -75,11 +75,14 @@ namespace elevator
 			void on_idle();
 			bool on_start();
 			void on_in_transit();
-			void on_waypoint_arrive(int waypoint_floor);
+			void on_waypoint_arrive();
 			void on_quit();
 
 			void timer_pulse(int seconds);
 			void debug_msg(std::string msg);
+
+			void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
+			std::map<std::string, strong_actor_ptr> debug_message_subscribers;
 
 	};
 }
