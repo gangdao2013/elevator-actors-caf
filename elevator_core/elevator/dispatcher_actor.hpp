@@ -12,14 +12,14 @@ namespace dispatcher
 
 	struct passenger_journey
 	{
-		const strong_actor_ptr& passenger;
+		strong_actor_ptr passenger;
 		int from_floor;
 		int to_floor;
 
-		passenger_journey(const strong_actor_ptr &passenger, int from_floor, int to_floor ):
-			passenger{std::move(passenger)}
+		passenger_journey(const strong_actor_ptr passenger, int from_floor, int to_floor ):
+			passenger{passenger}
 			, from_floor{from_floor}
-		, to_floor{ to_floor }{}
+			, to_floor{ to_floor }{}
 
 		//bool operator < (passenger_journey const& other)const { return from_floor < other.from_floor; }
 	};
@@ -61,7 +61,7 @@ namespace dispatcher
 
 		void debug_msg(std::string msg);
 
-		std::queue<std::unique_ptr<passenger_journey>> journeys;
+		std::queue<std::shared_ptr<passenger_journey>> journeys;
 		std::queue<strong_actor_ptr> idle_elevators;
 
 
@@ -71,8 +71,10 @@ namespace dispatcher
 		int register_passenger(const strong_actor_ptr& passenger);
 		std::vector<strong_actor_ptr> passengers;
 
-		void schedule_journey(std::unique_ptr<passenger_journey> journey);
+		void schedule_journey(std::shared_ptr<passenger_journey> journey);
 		void dispatch_next_journey();
+
+		void notify_passengers(int elevator_number, int floor_number);
 
 	};
 

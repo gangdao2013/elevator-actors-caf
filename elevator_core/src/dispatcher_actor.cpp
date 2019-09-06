@@ -67,8 +67,8 @@ namespace dispatcher
 			{
 				debug_msg ("dispatcher: call_atom received, from_floor: " +  std::to_string(from_floor) + ", to_floor: " + std::to_string(to_floor));
 				auto passenger = current_sender();
-				auto journey = std::make_unique<passenger_journey>(passenger, from_floor, to_floor);
-				schedule_journey(std::move(journey));
+				auto journey = std::make_shared<passenger_journey>(passenger, from_floor, to_floor);
+				schedule_journey(journey);
 				dispatch_next_journey();
 			},
 			[=](request_elevator_schedule_atom, int elevator_number)
@@ -78,12 +78,13 @@ namespace dispatcher
 			[=](elevator_idle_atom, int elevator_number)
 			{
 				debug_msg("dispatcher: elevator_idle_atom received, for elevator: " + std::to_string(elevator_number));
-				elevator_statuses[elevator_number - 1].idle = true;
+				elevator_statuses[elevator_number].idle = true;
 				dispatch_next_journey();
 			},
 			[=](waypoint_arrived_atom, int elevator_number, int floor_number)
 			{
 				debug_msg("dispatcher: waypoint_arrived_atom received, for elevator: " + std::to_string(elevator_number) + " for floor: " + std::to_string(floor_number));
+				notify_passengers(elevator_number, floor_number);
 			},
 			[=](register_elevator_atom, strong_actor_ptr elevator)
 			{
@@ -125,13 +126,18 @@ namespace dispatcher
 		};
 	}
 
-	void dispatcher_actor::schedule_journey(std::unique_ptr<passenger_journey> journey)
+	void dispatcher_actor::schedule_journey(std::shared_ptr<passenger_journey> journey)
 	{
-		journeys.emplace(std::move(journey));
+		// TODO: replace this with directional priority queues, with multiple waypoints
+
+		// for now, just to get it going, first in best dressed
+		journeys.emplace(journey);
 	}
 
 	void dispatcher_actor::dispatch_next_journey()
 	{
+		// TODO: replace this with directional priority queues, with multiple waypoints
+
 		if (journeys.size() > 0)
 		{
 			// check for idle elevator
@@ -140,12 +146,11 @@ namespace dispatcher
 			{
 				if (elevator_statuses[i].idle)
 				{
-					auto journey = std::move(journeys.front());
-					journeys.pop();
+					//journeys.pop(); // pop is 
 
 					elevator_statuses[i].idle = false;
-					send(elevator_statuses[i].elevator, waypoint_atom::value, journey->from_floor);
-					send(elevator_statuses[i].elevator, waypoint_atom::value, journey->to_floor);
+					send(elevator_statuses[i].elevator, waypoint_atom::value, journeys.front()->from_floor);
+					send(elevator_statuses[i].elevator, waypoint_atom::value, journeys.front()->to_floor);
 
 					break;
 				}					
@@ -153,15 +158,46 @@ namespace dispatcher
 		}
 	}
 
+	void dispatcher_actor::notify_passengers(int elevator_number, int floor_number)
+	{
+		// pick up
+
+		if (journeys.size() > 0)
+		{
+			if (floor_number == journeys.front()->from_floor)
+			{
+				int s = journeys.size();
+				auto f = journeys.front();
+				s = journeys.size();
+				auto passenger = f->passenger;
+
+				send(passenger, embark_atom::value);
+
+			}
+
+			// drop offs
+			if (floor_number == journeys.front()->to_floor)
+			{
+				auto passenger = journeys.front()->passenger;
+				send(passenger, disembark_atom::value, floor_number);
+
+				//send(journeys.front()->passenger, disembark_atom::value, floor_number);
+				journeys.pop(); // this journey is over
+			}
+		}
+
+
+	}
+
 	int dispatcher_actor::register_elevator(const strong_actor_ptr& elevator)
 	{
-		// check actor not registered already, otherwise add to list and return elevator number (= index + 1)
+		// check actor not registered already, otherwise add to list and return elevator number (= index)
 
 		int size = elevator_statuses.size();
 		for (int i = 0; i < size; i++)
 		{
 			if (elevator_statuses[i].elevator == elevator)
-				return i + 1;
+				return i;
 		}
 
 		elevator_status status;
@@ -170,7 +206,7 @@ namespace dispatcher
 
 		elevator_statuses.emplace_back(status);
 		monitor(elevator);
-		return size + 1;
+		return size;
 	}
 
 	int dispatcher_actor::register_passenger(const strong_actor_ptr& passenger)
