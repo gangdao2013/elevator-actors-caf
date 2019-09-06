@@ -4,7 +4,7 @@
 #include "caf/io/all.hpp"
 #include "elevator/elevator.hpp"
 #include "elevator/passenger_fsm.hpp"
-#include "elevator/passenger_repl.hpp"
+#include "elevator/passenger_repl_actor.hpp"
 
 namespace passenger
 {
@@ -21,13 +21,7 @@ namespace passenger
 		friend class quitting_state;
 
 	public:
-		passenger_actor(actor_config &cfg, std::string name) : 
-			event_based_actor(cfg)
-			, cfg_{cfg}
-			, name{ name }
-		{ 
-			transition_to_state(passenger_fsm::initalising);
-		}
+		passenger_actor(actor_config& cfg, std::string name);
 
 		behavior make_behavior() override;
 
@@ -37,6 +31,7 @@ namespace passenger
 		std::string controller_host;
 		uint16_t controller_port{ 0 };
 		strong_actor_ptr controller;
+		strong_actor_ptr dispatcher;
 		
 		int current_floor = 0;
 		int called_floor = 0;
@@ -55,6 +50,12 @@ namespace passenger
 		void on_elevator();
 		
 		void on_quit();
+
+		void debug_msg(std::string msg);
+
+		void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
+		std::map<std::string, strong_actor_ptr> debug_message_subscribers;
+
 	};
 
 

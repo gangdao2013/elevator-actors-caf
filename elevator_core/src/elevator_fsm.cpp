@@ -114,6 +114,7 @@ namespace elevator
 
 	void at_waypoint_state::on_enter(elevator_actor& actor)
 	{
+		actor.on_waypoint_arrive();
 		actor.timer_pulse(elevator::AT_WAYPOINT_TIME_SEC);
 	}
 
