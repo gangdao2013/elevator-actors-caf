@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
@@ -20,6 +21,19 @@ using namespace elevator;
 
 namespace elevator
 {
+
+	elevator_actor::elevator_actor(actor_config& cfg, int elevator_number) :
+		event_based_actor(cfg)
+		, cfg_{ cfg }
+		, elevator_number{ elevator_number }
+	{
+		transition_to_state(elevator_fsm::initalising);
+		set_error_handler([=](scheduled_actor* actor, error& err) -> void
+			{
+				aout(this) << "elevator_actor: error: " << err << std::endl;
+			});
+	}
+
 	// override for actor behaviour
 	// note that messages received by the actor are immediately delegated to the FSM
 	behavior elevator_actor::make_behavior()
@@ -33,9 +47,14 @@ namespace elevator
 			[=](connect_to_controller_atom, const std::string& host, uint16_t port)
 			{
 				debug_msg("connect_to_controller_atom received, host: " + host + ", port: " + std::to_string(port));
-				this->controller_host = host;
+				this->controller_host = std::move(host);
 				this->controller_port = port;
 				fsm->handle_connect(*this, host, port);
+			},
+			[=](register_dispatcher_atom)
+			{
+				debug_msg("register_dispatcher_atom received");
+				dispatcher = std::move(current_sender());
 			},
 			[=](elevator::waypoint_atom, int waypoint_floor)
 			{
@@ -54,10 +73,20 @@ namespace elevator
 			{
 				return elevator_number;
 			},
+			[=](set_number_atom, int number)
+			{
+				elevator_number = number;
+			},
 			[=](timer_atom)
 			{
 				debug_msg("timer_atom received");
 				return fsm->handle_timer(*this);
+			},
+			[=](subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
+			{
+				add_subscriber(current_sender(), subscriber_key, event_type);
+				debug_msg("subscribe_atom received");
+
 			}
 		};
 	}
@@ -127,12 +156,12 @@ namespace elevator
 					this->controller = controller;
 					auto controller_hdl = actor_cast<actor>(controller);
 					this->monitor(controller_hdl);
-					this->send(controller_hdl, elevator::register_elevator_atom::value);
+					this->send(controller, elevator::register_elevator_atom::value);
 					transition_to_state(elevator_fsm::idle);
 				},
 				[host, port, this](const error& err)
 				{
-					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(controller_port) + " => " + this->system().render(err) + " <<<");
+					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(port) + " => " + this->system().render(err) + " <<<");
 					transition_to_state(elevator_fsm::disconnected);
 				}
 				);
@@ -149,7 +178,8 @@ namespace elevator
 	// no more waypoints/passengers, let the controller know and then wait for a job from the controller
 	void elevator_actor::on_idle()
 	{
-		send(controller, elevator_idle_atom::value, elevator_number);
+		if(dispatcher)
+			send(dispatcher, elevator_idle_atom::value, elevator_number);
 
 	}
 
@@ -169,8 +199,9 @@ namespace elevator
 	// at a floor, doors opening, picking up & dropping off passengers, 
 	void elevator_actor::on_waypoint_arrive()
 	{
-		// let the controller know we've arrived, so it can inform the passenger(s)
-		send(controller, elevator::waypoint_arrived_atom::value, current_floor);
+		// let the dispatcher know we've arrived, so it can inform the passenger(s)
+		if(dispatcher)
+			send(dispatcher, elevator::waypoint_arrived_atom::value, elevator_number, current_floor);
 	}
 
 	void elevator_actor::timer_pulse(int seconds)
@@ -180,7 +211,35 @@ namespace elevator
 
 	void elevator_actor::debug_msg(std::string msg)
 	{
-		aout(this) << "\n[elevator][" << name << "][" << fsm->get_state_name() << "][" << current_floor << "]: " << msg << "\n" << std::flush;
+		string subscriber_msg = "[elevator][" + std::to_string(elevator_number) + "][" + fsm->get_state_name() + "][" + std::to_string(current_floor) + "]: " + msg;
+		for (auto kv : debug_message_subscribers)
+		{
+			auto recipient = actor_cast<actor>(kv.second);
+			send(recipient, message_atom::value, subscriber_msg);
+		}
+
+	}
+	void elevator_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
+	{
+		// add subscriber to relevant subscriber map
+		switch (event_type)
+		{
+		case elevator_observable_event_type::debug_message:
+		{
+			// nb: deliberately replace if key is the same, need to destroy any existing ref
+			auto existing_ptr = debug_message_subscribers[subscriber_key];
+			if (existing_ptr)
+			{
+				auto handle = actor_cast<actor>(existing_ptr);
+				destroy(handle);
+			}
+			//debug_message_subscribers.insert(std::make_pair<string, const actor&>(subscriber_key, subscriber));
+			debug_message_subscribers[subscriber_key] = std::move(subscriber);
+		}
+		break;
+		default:
+			break;
+		};
 	}
 
 

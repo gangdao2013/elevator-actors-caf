@@ -39,6 +39,16 @@ namespace elevator
 	using elevator_idle_atom = atom_constant<atom("e_i")>;
 	using request_elevator_schedule_atom = atom_constant<atom("r_e_s")>;
 
+	using message_atom = atom_constant<atom("m")>;
+	using subscribe_atom = atom_constant<atom("sub")>;
+	using unsubscribe_atom = atom_constant<atom("unsub")>;
+
+	using start_atom = atom_constant<atom("start")>;
+	using command_atom = atom_constant<atom("cmd")>;
+	using set_number_atom = atom_constant<atom("num")>;
+
+	using register_dispatcher_atom = atom_constant<atom("r_d")>;
+
 
 	using quit_atom = atom_constant<atom("quit")>;
 
@@ -46,6 +56,7 @@ namespace elevator
 	public:
 		uint16_t port = 10000;
 		std::string host = "localhost";
+		std::string passenger_name = "unknown";
 		bool controller_mode = false;
 		bool passenger_mode = false;
 		bool elevator_mode = false;
@@ -53,11 +64,19 @@ namespace elevator
 		config() {
 			opt_group{ custom_options_, "global" }
 				.add(port, "port,p", "set controller port")
+				.add(passenger_name, "name,n", "passenger name")
 				.add(host, "host,H", "set controller host (ignored in controller mode, assumed to be localhost)")
 				.add(controller_mode, "controller,C", "enable controller mode")
 				.add(passenger_mode, "passenger,P", "enable passenger mode")
 				.add(elevator_mode, "elevator,E", "enable elevator mode")
 				;
 		}
+	};
+
+	// used for observables/observers
+	enum class elevator_observable_event_type
+	{
+		message,
+		debug_message
 	};
 }

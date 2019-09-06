@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <queue>
+#include <map>
 
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
@@ -11,7 +12,7 @@
 
 #include "elevator/elevator.hpp"
 #include "elevator/elevator_fsm.hpp"
-#include "elevator/elevator_repl.hpp"
+#include <elevator/elevator_repl_actor.hpp>
 
 #include <cassert>
 
@@ -39,13 +40,7 @@ namespace elevator
 		friend class quitting_state;
 
 		public:
-			elevator_actor(actor_config& cfg, int elevator_number) :
-				event_based_actor(cfg)
-				, cfg_{ cfg }
-				,  elevator_number{elevator_number}
-			{
-				transition_to_state(elevator_fsm::initalising);
-			}
+			elevator_actor(actor_config& cfg, int elevator_number);
 
 			behavior make_behavior() override;
 
@@ -57,12 +52,13 @@ namespace elevator
 			std::string controller_host;
 			uint16_t controller_port{ 0 };
 			strong_actor_ptr controller;
+
+			strong_actor_ptr dispatcher;
 			
 			int current_floor = 0;
 			elevator_motion current_motion = elevator_motion::stationary;
 
 			std::queue<int> waypoint_floors;
-
 
 			std::shared_ptr<elevator_fsm> fsm;
 			void transition_to_state(std::shared_ptr<elevator_fsm> state);
@@ -81,7 +77,10 @@ namespace elevator
 			void timer_pulse(int seconds);
 			void debug_msg(std::string msg);
 
-			// Destructor; all child objects 
+			// TODO: Destructor; all child objects 
+
+			void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
+			std::map<std::string, strong_actor_ptr> debug_message_subscribers;
 
 
 	};
