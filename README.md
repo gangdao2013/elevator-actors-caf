@@ -1,6 +1,13 @@
 # elevator-actors-caf: Elevator simulator using actors.
 
-`Note: Under construction (not completed); actors currently being wired up - see develop branch`
+*Note: Under construction (not fully completed); check develop and feature branches.* 
+
+*The various actors all talk together, and passengers can call for elevators, etc. The system currently only uses FIFO call request handling for one elevator, though you can fire up multiple passenger REPLs.*
+
+*Next round of features are oriented to a more realistic call scheduling algorithm, across multiple elevators.*
+
+*Stay tuned!*
+
 
 This is a demo project in C++ showing the C++ Actor Framework (CAF) being used to model elevators, passengers and controllers.
 
