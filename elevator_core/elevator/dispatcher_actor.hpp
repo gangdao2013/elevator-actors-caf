@@ -7,40 +7,60 @@
 #include "caf/all.hpp"
 #include "caf/io/all.hpp"
 
+#include "elevator/elevator_actor.hpp"
+
 namespace dispatcher
 {
-
-	struct passenger_journey
+	enum class direction
 	{
+		up,
+		down,
+		nowhere,
+	};
+
+	class journey
+	{
+	public:
+
 		strong_actor_ptr passenger;
 		int from_floor;
 		int to_floor;
+		direction direction;
 
-		passenger_journey(const strong_actor_ptr passenger, int from_floor, int to_floor ):
+		journey(const strong_actor_ptr passenger, int from_floor, int to_floor ):
 			passenger{passenger}
 			, from_floor{from_floor}
-			, to_floor{ to_floor }{}
+			, to_floor{ to_floor }
+		{
+			if (from_floor < to_floor)
+				direction = direction::up;
+			else if (from_floor > to_floor)
+				direction = direction::down;
+			else
+				direction = direction::nowhere;
+		}
 
 		//bool operator < (passenger_journey const& other)const { return from_floor < other.from_floor; }
 	};
 
-	typedef std::queue<strong_actor_ptr> actor_queue_t;
-	typedef std::vector<strong_actor_ptr> actor_list_t;
-	typedef std::vector<actor_queue_t> floor_pickup_list_t;
-	typedef std::vector<actor_list_t> floor_dropoff_list_t;
+	using journey_queue_t = std::queue<std::unique_ptr<journey>>;
+	using journey_queue_list_t = std::vector<journey_queue_t>;
+	//using up_journey_queues = std::map<int, passenger_journey_queue, std::greater<int>>;
+	//using down_journey_queues = std::map<int, passenger_journey_queue, std::less<int>>;
 
-	struct scheduler_state
-	{
-		strong_actor_ptr controller;
-		floor_pickup_list_t pickup_list;
-		floor_dropoff_list_t dropoff_list;
-		std::queue<int> waypoints;
-	};
+
+	typedef std::queue<strong_actor_ptr> floor_pickup_wait_queue_t;
+	typedef std::vector<strong_actor_ptr> actor_list_t;
+
+
+	//using down_elevator_schedule = std::map<int, std::unique_ptr<elevator_schedule_item>>;
 
 	struct elevator_status
 	{
 		strong_actor_ptr elevator;
 		bool idle;
+		elevator::elevator_motion motion;
+		int current_floor;
 	};
 
 
@@ -61,9 +81,11 @@ namespace dispatcher
 
 		void debug_msg(std::string msg);
 
-		std::queue<std::shared_ptr<passenger_journey>> journeys;
+		std::queue<std::unique_ptr<journey>> undispached_journeys;
 		std::queue<strong_actor_ptr> idle_elevators;
 
+		//std::set<int, std::vector<int>, std::less<int>> down_waypoints;
+		//std::set<int, std::vector<int>, std::greater<int>> up_waypoints;
 
 		int register_elevator(const strong_actor_ptr& elevator);
 		std::vector<elevator_status> elevator_statuses;
@@ -71,10 +93,16 @@ namespace dispatcher
 		int register_passenger(const strong_actor_ptr& passenger);
 		std::vector<strong_actor_ptr> passengers;
 
-		void schedule_journey(std::shared_ptr<passenger_journey> journey);
-		void dispatch_next_journey();
+		void schedule_journey(std::unique_ptr<journey> journey);
+		void dispatch_idle_elevators();
 
 		void notify_passengers(int elevator_number, int floor_number);
+
+		journey_queue_list_t up_journey_queues; 
+		elevator_schedule<std::greater<int>> up_schedule;;
+
+		journey_queue_list_t down_journey_queues;
+		elevator_schedule<std::less<int>> down_schedule;
 
 	};
 

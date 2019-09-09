@@ -35,5 +35,6 @@
     <ClInclude Include="elevator\elevator_repl_actor.hpp" />
     <ClInclude Include="elevator\controller_repl_actor.hpp" />
     <ClInclude Include="elevator\dispatcher_actor.hpp" />
+    <ClInclude Include="elevator\schedule.hpp" />
   </ItemGroup>
 </Project>

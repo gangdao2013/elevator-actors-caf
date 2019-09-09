@@ -201,10 +201,10 @@ namespace passenger
 
 	void passenger_actor::on_call(int from_floor, int to_floor)
 	{
-		if (from_floor > elevator::FLOOR_MAX
-			|| from_floor < elevator::FLOOR_MIN
-			|| to_floor > elevator::FLOOR_MAX
-			|| to_floor < elevator::FLOOR_MIN
+		if (from_floor > elevator::TOP_FLOOR
+			|| from_floor < elevator::BOTTOM_FLOOR
+			|| to_floor > elevator::TOP_FLOOR
+			|| to_floor < elevator::BOTTOM_FLOOR
 			)
 			return;
 
@@ -216,7 +216,7 @@ namespace passenger
 
 	void passenger_actor::on_arrive(int arrived_at_floor)
 	{
-		if (arrived_at_floor > elevator::FLOOR_MAX || arrived_at_floor < elevator::FLOOR_MIN)
+		if (arrived_at_floor > elevator::TOP_FLOOR || arrived_at_floor < elevator::BOTTOM_FLOOR)
 			return;
 		current_floor = arrived_at_floor;
 	}

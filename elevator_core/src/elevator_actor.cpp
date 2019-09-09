@@ -170,7 +170,7 @@ namespace elevator
 	// waypoint floor received from controller
 	void elevator_actor::on_waypoint_received(int waypoint_floor)
 	{
-		if (waypoint_floor > elevator::FLOOR_MAX || waypoint_floor < elevator::FLOOR_MIN)
+		if (waypoint_floor > elevator::TOP_FLOOR || waypoint_floor < elevator::BOTTOM_FLOOR)
 			return;
 		waypoint_floors.emplace(waypoint_floor); // simple fifo behaviour for now
 	}
@@ -179,7 +179,7 @@ namespace elevator
 	void elevator_actor::on_idle()
 	{
 		if(dispatcher)
-			send(dispatcher, elevator_idle_atom::value, elevator_number);
+			send(dispatcher, elevator_idle_atom::value, elevator_number, current_floor);
 
 	}
 

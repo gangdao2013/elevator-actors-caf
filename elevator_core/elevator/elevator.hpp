@@ -12,8 +12,10 @@ using namespace caf;
 namespace elevator
 {
 
-	const int FLOOR_MIN = 0;
-	const int FLOOR_MAX = 10;
+	const int BOTTOM_FLOOR = 0; // ground floor
+	const int TOP_FLOOR = 10; // top floor
+	const int MAX_FLOORS = 11; // total floors
+	const int ELEVATOR_CAPACITY_MAX = 2;
 
 	const int FLOOR_TRANSIT_TIME_SEC = 1; // # seconds it takes to transit from one floor to the next, in either direction
 	const int AT_WAYPOINT_TIME_SEC = 2; // # seconds the elevator will wait at a waypoint, before moving into in_transit state

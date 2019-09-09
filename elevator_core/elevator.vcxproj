@@ -44,6 +44,7 @@
     <ClInclude Include="elevator\passenger_fsm.hpp" />
     <ClInclude Include="elevator\passenger_repl_actor.hpp" />
     <ClInclude Include="elevator\repl_actor.hpp" />
+    <ClInclude Include="elevator\schedule.hpp" />
     <ClInclude Include="elevator\string_util.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
