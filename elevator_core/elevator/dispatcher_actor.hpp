@@ -46,9 +46,6 @@ namespace dispatcher
 
 	using journey_queue_t = std::queue<std::unique_ptr<journey>>;
 	using journey_queue_list_t = std::vector<journey_queue_t>;
-	//using up_journey_queues = std::map<int, passenger_journey_queue, std::greater<int>>;
-	//using down_journey_queues = std::map<int, passenger_journey_queue, std::less<int>>;
-
 
 	typedef std::queue<strong_actor_ptr> floor_pickup_wait_queue_t;
 	typedef std::vector<strong_actor_ptr> actor_list_t;
@@ -62,6 +59,7 @@ namespace dispatcher
 		bool idle;
 		elevator::elevator_motion motion;
 		int current_floor;
+		std::queue<schedule::elevator_schedule_item<strong_actor_ptr>> schedule;
 	};
 
 
@@ -100,10 +98,10 @@ namespace dispatcher
 		void notify_passengers(int elevator_number, int floor_number);
 
 		journey_queue_list_t up_journey_queues; 
-		schedule::elevator_schedule<std::greater<int>> up_schedule;;
+		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::UP>> up_schedules;
 
 		journey_queue_list_t down_journey_queues;
-		schedule::elevator_schedule<std::less<int>> down_schedule;
+		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::DOWN>> down_schedules;
 
 	};
 

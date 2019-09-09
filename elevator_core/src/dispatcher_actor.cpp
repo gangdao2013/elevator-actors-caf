@@ -34,8 +34,6 @@ namespace dispatcher
 
 	//}
 
-	
-
 
 
 	dispatcher_actor::dispatcher_actor(actor_config& cfg, const actor& controller_actor) : event_based_actor(cfg)
@@ -59,13 +57,6 @@ namespace dispatcher
 		{
 			up_journey_queues[i] = journey_queue_t{};
 			down_journey_queues[i] = journey_queue_t{};
-
-			//up_schedule.push_back(std::move(std::make_unique<elevator_schedule_item>()));
-			//up_schedule[i]->floor = i;
-			//up_schedule[i]->unused_capacity = 0;
-			//down_schedule.push_back(std::move(std::make_unique<elevator_schedule_item>()));
-			//down_schedule[i]->floor = i;
-			//down_schedule[i]->unused_capacity = 0;
 		}
 
 	}
@@ -142,144 +133,52 @@ namespace dispatcher
 
 	void dispatcher_actor::schedule_journey(std::unique_ptr<journey> journey)
 	{
-		// TODO: replace this with directional priority queues, with multiple waypoints
 
-		/*
-		
-		up scheduling pseudo code
-		
-		start_floor = min(up_journey_queues index)
+		if (journey->direction == direction::up)
+		{
+			bool inserted_in_existing_schedule = false;
+			if (up_schedules.size() > 0)
+			{
+				for (auto itr = up_schedules.begin(); itr != up_schedules.end(); itr++)
+				{
+					if (itr->has_capacity(journey->from_floor, journey->to_floor, 1))
+					{
+						itr->insert_journey(journey->passenger, journey->from_floor, journey->to_floor);
+						inserted_in_existing_schedule = true;
+					}
+				}
+			}
+			if (!inserted_in_existing_schedule)
+			{
+				// create a new schedule and add to end of up schedule list
+				schedule::elevator_schedule<strong_actor_ptr, schedule::UP> schedule;
+				schedule.insert_journey(journey->passenger, journey->from_floor, journey->to_floor);
+				up_schedules.push_back(std::move(schedule));
+			}
+		} 
 
-		elevator_capacity(start_floor) = max_elevator_capacity
-
-		for( i = start_floor; i <= max_floor; i++)
-
-			for (q = 0 to elevator_capacity(i))
-				journey = up_journey_queue(i).pop()
-				pickup_list(i) += journey.passenger
-				drop_off_list(journey.to_floor) += journey.passenger		
-			elevator_capacity(i+1) = elevator_capacity(i) - len(dropoff_list(i+1)
-		
-		*/
-
-		//if (journey->direction == journey_direction::down)
-		//	down_journey_queues[journey->from_floor].push(std::move(journey));
-		//else if (journey->direction == journey_direction::up)
-		//	up_journey_queues[journey->from_floor].push(std::move(journey));
-		//else
-		//	return;
-
-		//// reset capacities
-		//for (int i = 0; i < MAX_FLOORS; i++)
-		//	up_schedule[i]->unused_capacity = ELEVATOR_CAPACITY_MAX;
-
-		//if (up_journey_queues.size() > 0)
-		//{
-		//	up_schedule[0]->unused_capacity = ELEVATOR_CAPACITY_MAX;
-		//	int max_floor = up_journey_queues.size();
-		//	for (int current_floor = 0; current_floor < max_floor; current_floor++)
-		//	{
-		//		journey_queue_t & waiting_journey_queue = up_journey_queues[current_floor]; //note use of ref here, otherwise we get copy assignment of queue of unique vectors which is invalid;
-
-		//		while 
-		//		(
-		//			(waiting_journey_queue.size() > 0) 
-		//			&& (up_schedule[current_floor]->unused_capacity != 0)
-		//		)
-		//		{
-		//			auto passenger = waiting_journey_queue.front()->passenger;
-		//			int to_floor = waiting_journey_queue.front()->to_floor;
-
-		//			up_schedule[current_floor]->pickup_list.push_back(passenger);
-		//			up_schedule[current_floor]->unused_capacity--;
-
-		//			up_schedule[to_floor]->dropoff_list.push_back(std::move(waiting_journey_queue.front())); // schedule this journey
-		//			
-		//			waiting_journey_queue.pop();
-
-		//			if (current_floor < max_floor)
-		//			{
-		//				int next_floor = current_floor + 1;
-		//				up_schedule[next_floor]->unused_capacity 
-		//					= up_schedule[current_floor]->unused_capacity + up_schedule[next_floor]->dropoff_list.size();
-		//			}
-		//		}
-		//	}
-		//}
-
-		/*
-		down scheduling pseudo code
-
-		start_floor = max(down_journey_queue index)
-
-		elevator_capacity(start_floor) = max_elevator_capacity
-		
-		for( i = start_floor; i >= 0; i--)
-
-			for (q = 0 to elevator_capacity(i))
-				journey = down_journey_queue(i).pop()
-				pickup_list(i) += journey.passenger
-				drop_off_list(journey.to_floor) += journey.passenger		
-			elevator_capacity(i-1) = elevator_capacity(i) - len(dropoff_list(i-1)
-		
-		*/
-
-		// reset capacities
-		// reset capacities
-		//for (int i = 0; i < MAX_FLOORS; i++)
-		//	down_schedule[i]->unused_capacity = ELEVATOR_CAPACITY_MAX;
-
-		//if (down_journey_queues.size() > 0)
-		//{
-		//	down_schedule[MAX_FLOORS]->unused_capacity = ELEVATOR_CAPACITY_MAX;
-		//	int max_floor = up_journey_queues.size();
-		//	for (int current_floor = MAX_FLOORS; current_floor > 0; current_floor--)
-		//	{
-		//		journey_queue_t& waiting_journey_queue = down_journey_queues[current_floor]; //note use of ref here, otherwise we get copy assignment of queue of unique vectors which is invalid;
-
-		//		while
-		//			(
-		//			(waiting_journey_queue.size() > 0)
-		//				&& (down_schedule[current_floor]->unused_capacity != 0)
-		//				)
-		//		{
-		//			auto passenger = waiting_journey_queue.front()->passenger;
-		//			int to_floor = waiting_journey_queue.front()->to_floor;
-
-		//			down_schedule[current_floor]->pickup_list.push_back(passenger);
-		//			down_schedule[current_floor]->unused_capacity--;
-
-		//			down_schedule[to_floor]->dropoff_list.push_back(std::move(waiting_journey_queue.front())); // schedule this journey
-
-		//			waiting_journey_queue.pop();
-
-		//			if (current_floor > 0)
-		//			{
-		//				int next_floor = current_floor - 1;
-		//				down_schedule[next_floor]->unused_capacity
-		//					= down_schedule[current_floor]->unused_capacity + down_schedule[next_floor]->dropoff_list.size();
-		//			}
-		//		}
-		//	}
-		//}
-
-
-
-		// for now, just to get it going, first in best dressed
-		//undispached_journeys.push(std::move(journey));
-		//if (journey->from_floor == journey->to_floor)
-		//	return;
-		//if (journey->from_floor > journey->to_floor) // down trip
-		//{
-		//	down_waypoints.insert(journey->from_floor);
-		//	down_waypoints.insert(journey->to_floor);
-		//}
-		//else
-		//{
-		//	up_waypoints.insert(journey->from_floor);
-		//	up_waypoints.insert(journey->to_floor);
-		//}
-
+		if (journey->direction == direction::down)
+		{
+			bool inserted_in_existing_schedule = false;
+			if (down_schedules.size() > 0)
+			{
+				for (auto itr = down_schedules.begin(); itr != down_schedules.end(); itr++)
+				{
+					if (itr->has_capacity(journey->from_floor, journey->to_floor, 1))
+					{
+						itr->insert_journey(journey->passenger, journey->from_floor, journey->to_floor);
+						inserted_in_existing_schedule = true;
+					}
+				}
+			}
+			if (!inserted_in_existing_schedule)
+			{
+				// create a new schedule and add to end of up schedule list
+				schedule::elevator_schedule<strong_actor_ptr, schedule::DOWN> schedule;
+				schedule.insert_journey(journey->passenger, journey->from_floor, journey->to_floor);
+				down_schedules.push_back(std::move(schedule));
+			}
+		}
 	}
 
 	void dispatcher_actor::dispatch_idle_elevators()
