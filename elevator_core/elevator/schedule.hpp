@@ -21,8 +21,8 @@ namespace schedule
 	using pickup_list_t = std::vector<strong_actor_ptr>;
 	using dropoff_list_t = std::vector<strong_actor_ptr>;
 
-	using DOWN = std::less<int>;
-	using UP = std::greater<int>;
+	using UP = std::less<int>;
+	using DOWN = std::greater<int>;
 
 	enum class schedule_direction
 	{
@@ -109,28 +109,14 @@ namespace schedule
 		if ((get_direction() == schedule_direction::up) && (to_floor < from_floor))
 			return false;
 
-
-		int floor_count_expected = std::abs(from_floor - to_floor) + 1;
-		int floor_count_actual = 0;
-
 		auto itr = schedule.begin();
-		auto back_itr = schedule.rbegin();
-		//if ((itr->second->floor > back_itr->second->floor)
-		//{
-		//	// then down 
-		//}
-		//schedule.
 		while (itr->first != from_floor && itr != schedule.end()) { itr++; }
-		for (; itr != schedule.end() && itr->first <= to_floor; itr++)
+		for (; itr != schedule.end() && itr->first != to_floor; itr++)
 		{
 			if (itr->second->unused_capacity() < passenger_numbers)
 				return false;
-			floor_count_actual++;
 		}
-		if ((floor_count_actual - floor_count_expected) != 0)
-			return false; // this would happen if called from/to in the wrong direction for this schedule
-		else
-			return true;
+		return true;
 	}
 
 	template<class direction>
