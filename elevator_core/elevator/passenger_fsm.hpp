@@ -63,7 +63,7 @@ namespace passenger
 		virtual void handle_initialise(passenger_actor& actor) {};
 		virtual void handle_connect(passenger_actor& actor, std::string host, uint16_t port);
 		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) {};
-		virtual void handle_elevator_arrived(passenger_actor& actor) {};
+		virtual void handle_elevator_arrived(passenger_actor& actor, int elevator_number) {};
 		virtual void handle_destination_arrived(passenger_actor& actor, int arrived_at_floor) {};
 		virtual void handle_quit(passenger_actor& actor);
 		
@@ -96,7 +96,7 @@ namespace passenger
 		void on_enter(passenger_actor& actor) override;
 
 		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) override;
-		virtual void handle_elevator_arrived(passenger_actor& actor) override;
+		virtual void handle_elevator_arrived(passenger_actor& actor, int elevator_number) override;
 
 		virtual std::string get_state_name() override { return "in_lobby"; };
 	};

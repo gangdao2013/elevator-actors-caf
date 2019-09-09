@@ -57,10 +57,10 @@ namespace passenger
 				aout(this) << "\npassenger: quit_atom received" << endl;
 				fsm->handle_quit(*this);
 			},
-			[=](embark_atom)
+			[=](embark_atom, int elevator_number)
 			{
 				aout(this) << "\npassenger: embark_atom received" << endl;
-				fsm->handle_elevator_arrived(*this);
+				fsm->handle_elevator_arrived(*this, elevator_number);
 			},
 			[=](disembark_atom, int floor)
 			{

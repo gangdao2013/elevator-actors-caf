@@ -59,7 +59,41 @@ namespace dispatcher
 		bool idle;
 		elevator::elevator_motion motion;
 		int current_floor;
-		std::queue<schedule::elevator_schedule_item<strong_actor_ptr>> schedule;
+		std::map<int, std::unique_ptr<schedule::elevator_waypoint_item<strong_actor_ptr>>> waypoints;
+
+		elevator_status() : idle{ true }, current_floor{ 0 }, motion{ elevator::elevator_motion::stationary } {}
+
+		elevator_status(strong_actor_ptr elevator) : elevator{ elevator }
+			, idle{ true }, current_floor{ 0 }, motion{ elevator::elevator_motion::stationary }{}
+
+		elevator_status(elevator_status&& other) noexcept
+		{
+			elevator = std::move(other.elevator);
+			other.elevator = nullptr;
+			motion = other.motion;
+			other.motion = elevator::elevator_motion::stationary;
+			idle = other.idle;
+			current_floor = other.current_floor;
+			other.current_floor = 0;
+			waypoints = std::move(other.waypoints);
+			other.waypoints.clear();
+		}
+
+		elevator_status& operator=(elevator_status&& other) noexcept
+		{
+			if (this == &other) return *this;
+
+			elevator = std::move(other.elevator);
+			other.elevator = nullptr;
+			motion = other.motion;
+			other.motion = elevator::elevator_motion::stationary;
+			idle = other.idle;
+			current_floor = other.current_floor;
+			other.current_floor = 0;
+			waypoints = std::move(other.waypoints);
+			other.waypoints.clear();
+			return *this;
+		}
 	};
 
 
@@ -80,8 +114,8 @@ namespace dispatcher
 
 		void debug_msg(std::string msg);
 
-		std::queue<std::unique_ptr<journey>> undispached_journeys;
-		std::queue<strong_actor_ptr> idle_elevators;
+		//std::queue<std::unique_ptr<journey>> undispached_journeys;
+		//std::queue<strong_actor_ptr> idle_elevators;
 
 		//std::set<int, std::vector<int>, std::less<int>> down_waypoints;
 		//std::set<int, std::vector<int>, std::greater<int>> up_waypoints;
@@ -97,10 +131,10 @@ namespace dispatcher
 
 		void notify_passengers(int elevator_number, int floor_number);
 
-		journey_queue_list_t up_journey_queues; 
+		//journey_queue_list_t up_journey_queues; 
 		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::UP>> up_schedules;
 
-		journey_queue_list_t down_journey_queues;
+		//journey_queue_list_t down_journey_queues;
 		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::DOWN>> down_schedules;
 
 	};

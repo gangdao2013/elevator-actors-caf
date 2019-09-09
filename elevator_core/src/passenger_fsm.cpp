@@ -45,8 +45,9 @@ namespace passenger {
 		actor.on_call(from_floor, to_floor);
 	}
 
-	void in_lobby_state::handle_elevator_arrived(passenger_actor& actor)
+	void in_lobby_state::handle_elevator_arrived(passenger_actor& actor, int elevator_number)
 	{
+		actor.elevator_number = elevator_number;
 		actor.transition_to_state(passenger_fsm::in_elevator);
 	}
 		

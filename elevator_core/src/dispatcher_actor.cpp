@@ -20,21 +20,6 @@ using namespace elevator;
 namespace dispatcher
 {
 
-	//vector<queue<passenger_journey>> pick_ups(elevator::FLOOR_MAX);
-	//vector<vector<passenger_journey>> drop_offs(elevator::FLOOR_MAX);
-
-	//void schedule_journey(stateful_actor<scheduler_state>* self, std::unique_ptr<passenger_journey> journey)
-	//{
-	//	auto state = self->state;
-
-	//	state.pickup_list[journey->from_floor].emplace(journey->passenger);
-	//	state.dropoff_list[journey->to_floor].emplace_back(journey->passenger);
-	//	state.waypoints.emplace(journey->from_floor);
-	//	state.waypoints.emplace(journey->to_floor);
-
-	//}
-
-
 
 	dispatcher_actor::dispatcher_actor(actor_config& cfg, const actor& controller_actor) : event_based_actor(cfg)
 		, controller_actor_{ std::move(controller_actor) }
@@ -53,11 +38,11 @@ namespace dispatcher
 			});
 
 
-		for (int i = 0; i < MAX_FLOORS; i++)
-		{
-			up_journey_queues[i] = journey_queue_t{};
-			down_journey_queues[i] = journey_queue_t{};
-		}
+		//for (int i = 0; i < MAX_FLOORS; i++)
+		//{
+		//	up_journey_queues[i] = journey_queue_t{};
+		//	down_journey_queues[i] = journey_queue_t{};
+		//}
 
 	}
 
@@ -183,61 +168,75 @@ namespace dispatcher
 
 	void dispatcher_actor::dispatch_idle_elevators()
 	{
-		// TODO: replace this with directional priority queues, with multiple waypoints
 
-		//// Down journeys first
-		//if (down_waypoints.size() > 1)
-		//{
-		//	// check for idle elevator
-		//	int size = elevator_statuses.size();
-		//	for (int i = 0; i < size; i++)
-		//	{
-		//		if (elevator_statuses[i].idle)
-		//		{
-		//			elevator_statuses[i].idle = false;
-		//			elevator_statuses[i].motion = elevator_motion::moving_up;
+		// Down journeys first
+		if (down_schedules.size() > 1)
+		{
+			// check for idle elevator
+			int size = elevator_statuses.size();
+			for (int i = 0; i < size; i++)
+			{
+				if (elevator_statuses[i].idle)
+				{
+					elevator_statuses[i].idle = false;
+					elevator_statuses[i].motion = elevator_motion::moving_down;
+					elevator_statuses[i].waypoints.clear();
 
-		//			int count = 0;
-		//			while(down_waypoints.size() != 0 && count < 4) // don't send more than 4 jobs 
+					// set up and dispatch the waypoints for the elevator
+					auto waypoints = std::move(down_schedules.front().get_waypoints_queue());
+					while (waypoints.size() > 0)
+					{
+						send(elevator_statuses[i].elevator, waypoint_atom::value, waypoints.front()->floor);
+						elevator_statuses[i].waypoints[waypoints.front()->floor] = std::move(waypoints.front());
+						waypoints.pop();
+					}
+					down_schedules.pop_front();
+				}					
+			}
+		}
 
-		//			int waypoint = *(down_waypoints.begin());
-		//			send(elevator_statuses[i].elevator, waypoint_atom::value, waypoint);
-		//			down_waypoints.erase(waypoint);
-		//			if (down_waypoints.size > 0)
-		//			{
-		//				waypoint = *(down_waypoints.begin());
-		//				down_waypoints.erase()
-		//			send(elevator_statuses[i].elevator, waypoint_atom::value, undispached_journeys.front()->to_floor);
-		//			}
+		// Up journey next
+		if (up_schedules.size() > 1)
+		{
+			// check for idle elevator
+			int size = elevator_statuses.size();
+			for (int i = 0; i < size; i++)
+			{
+				if (elevator_statuses[i].idle)
+				{
+					elevator_statuses[i].idle = false;
+					elevator_statuses[i].motion = elevator_motion::moving_up;
+					elevator_statuses[i].waypoints.clear();
 
-		//			break;
-		//		}					
-		//	}
-		//}
+					// set up and dispatch the waypoints for the elevator
+					auto waypoints = std::move(up_schedules.front().get_waypoints_queue());
+					while (waypoints.size() > 0)
+					{
+						send(elevator_statuses[i].elevator, waypoint_atom::value, waypoints.front()->floor);
+						elevator_statuses[i].waypoints[waypoints.front()->floor] = std::move(waypoints.front());
+						waypoints.pop();
+					}
+					up_schedules.pop_front();
+				}
+			}
+		}
 	}
 
 	void dispatcher_actor::notify_passengers(int elevator_number, int floor_number)
 	{
-		// pick up
-
-		if (undispached_journeys.size() > 0)
+		// drop offs
+		std::vector<strong_actor_ptr>& dropoffs = elevator_statuses[elevator_number].waypoints[floor_number]->dropoff_list;
+		for (auto passenger : dropoffs)
 		{
-			if (floor_number == undispached_journeys.front()->from_floor)
-			{
-				auto passenger = undispached_journeys.front()->passenger;
-				send(passenger, embark_atom::value);
-			}
-
-			// drop offs
-			if (floor_number == undispached_journeys.front()->to_floor)
-			{
-				auto passenger = undispached_journeys.front()->passenger;
-				send(passenger, disembark_atom::value, floor_number);
-
-				//send(journeys.front()->passenger, disembark_atom::value, floor_number);
-				undispached_journeys.pop(); // this journey is over
-			}
+			send(passenger, disembark_atom::value, floor_number);
 		}
+
+		std::vector<strong_actor_ptr>& pickups = elevator_statuses[elevator_number].waypoints[floor_number]->pickup_list;
+		for (auto passenger : pickups)
+		{
+			send(passenger, embark_atom::value, elevator_number);
+		}
+
 	}
 
 	int dispatcher_actor::register_elevator(const strong_actor_ptr& elevator)
@@ -251,11 +250,11 @@ namespace dispatcher
 				return i;
 		}
 
-		elevator_status status;
-		status.elevator = std::move(elevator);
-		status.idle = true;
+		elevator_status status(elevator);
+//		status.elevator = std::move(elevator);
 
-		elevator_statuses.emplace_back(status);
+
+		elevator_statuses.push_back(std::move(status));
 		monitor(elevator);
 		return size;
 	}

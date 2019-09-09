@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 //#include <math.h>
+#include <queue>
 
 #include "elevator/elevator.hpp"
 #include "caf/all.hpp"
@@ -39,6 +40,14 @@ namespace schedule
 	};
 
 	template<class P>
+	struct elevator_waypoint_item
+	{
+		int floor{ 0 };
+		std::vector<P> pickup_list;
+		std::vector<P> dropoff_list;
+	};
+
+	template<class P>
 	inline int elevator_schedule_item<P>::unused_capacity()
 	{
 		int result = ELEVATOR_CAPACITY_MAX - onboard_count - pickup_list.size() + dropoff_list.size();
@@ -66,6 +75,7 @@ namespace schedule
 		int max_capacity(int from_floor, int to_floor);
 		schedule_direction get_direction();
 		void insert_journey(P passenger, int from_floor, int to_floor);
+		std::queue<std::unique_ptr<elevator_waypoint_item<P>>> get_waypoints_queue();
 
 	private:
 
@@ -77,6 +87,30 @@ namespace schedule
 	//elevator_schedule<class P, direction>::~elevator_schedule()
 	//{
 	//}
+
+	// NB: move semantics:
+	template<class P, class direction>
+	std::queue<std::unique_ptr<elevator_waypoint_item<P>>> elevator_schedule<P, direction>::get_waypoints_queue()
+	{
+		std::queue<std::unique_ptr<elevator_waypoint_item<P>>> queue;
+		if (schedule.size() > 0)
+		{
+			for (auto itr = schedule.begin(); itr != schedule.end(); itr++)
+			{
+				// only interested in floors that have pickups/dropoffs
+				if (itr->second->pickup_list.size() > 0
+					|| itr->second->dropoff_list.size() > 0)
+				{
+					auto waypoint = std::make_unique<elevator_waypoint_item<P>>();
+					waypoint->floor = itr->second->floor;
+					waypoint->pickup_list = std::move(itr->second->pickup_list);
+					waypoint->dropoff_list = std::move(itr->second->dropoff_list);
+					queue.push(std::move(waypoint));
+				}
+			}
+		}
+		return queue;
+	}
 
 	template<class P, class direction>
 	schedule_direction elevator_schedule<P, direction>::get_direction()
