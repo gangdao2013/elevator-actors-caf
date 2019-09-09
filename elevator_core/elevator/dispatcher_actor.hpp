@@ -8,6 +8,7 @@
 #include "caf/io/all.hpp"
 
 #include "elevator/elevator_actor.hpp"
+#include "elevator/schedule.hpp"
 
 namespace dispatcher
 {
@@ -99,10 +100,10 @@ namespace dispatcher
 		void notify_passengers(int elevator_number, int floor_number);
 
 		journey_queue_list_t up_journey_queues; 
-		elevator_schedule<std::greater<int>> up_schedule;;
+		schedule::elevator_schedule<std::greater<int>> up_schedule;;
 
 		journey_queue_list_t down_journey_queues;
-		elevator_schedule<std::less<int>> down_schedule;
+		schedule::elevator_schedule<std::less<int>> down_schedule;
 
 	};
 
