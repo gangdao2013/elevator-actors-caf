@@ -4,7 +4,7 @@ This is a demo project in C++ showing the C++ Actor Framework (CAF) being used t
 
 See more information about CAF here: http://www.actor-framework.org
 
-##Set up
+## Set up & quick start
 The project is currently structured as a Visual Studio 2019 C++ solution, that relies on the CAF vcpkg being installed user-globally. At some stage I plan to move this over to CMake.
 
 The project is using GitFlow workflow; see develop and feature branches for latest code.
@@ -37,7 +37,7 @@ Note that the application can be run across a network, e.g. a Passenger can conn
 Modes in more detail:
 ---------------------
 
-##Controller mode: 
+### Controller mode: 
 
 Runs as the main controller/supervisor for the system. An embedded controller actor and linked controller REPL actor will start.
 It doesn't (yet) monitor/respawn actors, but planned for the future. 
@@ -48,7 +48,7 @@ elevator.exe -C --port <port number, default 10000>
 ```
 ...will start a controller on localhost on default port 10000 (you can change this in elevator/elevator.hpp). Run one controller per session.
 
-##Elevator mode: 
+### Elevator mode: 
 Runs as an elevator. An embedded elevator actor and linked elevator REPL will start.
 
 Usage:
@@ -60,7 +60,7 @@ elevator.exec -E --host <host-name> --port <port number, default 10000>
 You can run multiple elevators per session, in separate command windows. Each elevator has default capacity of 2 passengers, 
 change this in elevator/elevator.hpp. Future versions will have capacity be a command line option.
 
-##Passenger mode:
+### Passenger mode:
 Runs as a passenger. An embedded passenger actor and linked passenger REPL will start.
 
 Usage:
@@ -99,4 +99,4 @@ Check for const refs, wrong actor types, wrong message tuple types, etc.
 
 ## License
 
-See the (LICENSE.md) file for license rights and limitations (+ Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
+See the [LICENCE](./LICENSE.md) file for license rights and limitations (+ Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
