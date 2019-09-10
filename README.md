@@ -92,9 +92,9 @@ The application models elevators using CAF actors. It utilises the actor model t
 
 Broadly:
 
-* controller*.cpp: The code for elevator controllers and their REPL actors.
-* elevator*.cpp: The code for elevator actors, their associated finite state machines (FSMs) and their REPL actors.
-* passenger*.cpp: The code for passenger actors, their associated finite state machines (FSMs) and their REPL actors.
+* controller*.cpp/hpp: The code for elevator controllers and their REPL actors.
+* elevator*.cpp/hpp: The code for elevator actors, their associated finite state machines (FSMs) and their REPL actors.
+* passenger*.cpp/hpp: The code for passenger actors, their associated finite state machines (FSMs) and their REPL actors.
 * dispatcher_actor.cpp: The code for scheduling and dispatching passenger journeys to elevators.
 
 Also, see the code in elevator/schedule.hpp for the data structures and algorithms relating to scheduling.
