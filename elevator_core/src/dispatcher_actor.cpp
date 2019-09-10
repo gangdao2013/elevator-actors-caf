@@ -57,11 +57,15 @@ namespace dispatcher
 				auto passenger = current_sender();
 				auto journey_ = std::make_unique<journey>(passenger, from_floor, to_floor);
 				schedule_journey(std::move(journey_));
-				dispatch_idle_elevators();
+				//dispatch_idle_elevators();
 			},
 			[=](request_elevator_schedule_atom, int elevator_number)
 			{
 				debug_msg("dispatcher: request_elevator_schedule_atom received, for elevator: " + std::to_string(elevator_number));
+			},
+			[=](dispatch_atom)
+			{
+
 			},
 			[=](elevator_idle_atom, int elevator_number, int floor)
 			{
@@ -69,7 +73,7 @@ namespace dispatcher
 				elevator_statuses[elevator_number].idle = true;
 				elevator_statuses[elevator_number].motion = elevator_motion::stationary;
 				elevator_statuses[elevator_number].current_floor = floor;
-				dispatch_idle_elevators();
+				//dispatch_idle_elevators();
 			},
 			[=](waypoint_arrived_atom, int elevator_number, int floor_number)
 			{
@@ -168,13 +172,13 @@ namespace dispatcher
 
 	void dispatcher_actor::dispatch_idle_elevators()
 	{
-
+		std::cout << "\ndispatch_idle_elevators 1\n" << std::flush;
 		// Down journeys first
-		if (down_schedules.size() > 1)
+		if (down_schedules.size() > 0)
 		{
 			// check for idle elevator
 			int size = elevator_statuses.size();
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size && down_schedules.size() > 0; i++)
 			{
 				if (elevator_statuses[i].idle)
 				{
@@ -183,6 +187,7 @@ namespace dispatcher
 					elevator_statuses[i].waypoints.clear();
 
 					// set up and dispatch the waypoints for the elevator
+					std::cout << "\ndispatch_idle_elevators 2\n" << std::flush;
 					auto waypoints = std::move(down_schedules.front().get_waypoints_queue());
 					while (waypoints.size() > 0)
 					{
@@ -196,11 +201,11 @@ namespace dispatcher
 		}
 
 		// Up journey next
-		if (up_schedules.size() > 1)
+		if (up_schedules.size() > 0)
 		{
 			// check for idle elevator
 			int size = elevator_statuses.size();
-			for (int i = 0; i < size; i++)
+			for (int i = 0; i < size && up_schedules.size() > 0; i++)
 			{
 				if (elevator_statuses[i].idle)
 				{
@@ -226,6 +231,7 @@ namespace dispatcher
 	{
 		// drop offs
 		std::vector<strong_actor_ptr>& dropoffs = elevator_statuses[elevator_number].waypoints[floor_number]->dropoff_list;
+		int s = dropoffs.size();
 		for (auto passenger : dropoffs)
 		{
 			send(passenger, disembark_atom::value, floor_number);

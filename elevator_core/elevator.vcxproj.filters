@@ -12,7 +12,6 @@
     <ClCompile Include="src\controller_actor.cpp" />
     <ClCompile Include="src\elevator_actor.cpp" />
     <ClCompile Include="src\elevator_fsm.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\passenger_actor.cpp" />
     <ClCompile Include="src\passenger_fsm.cpp" />
     <ClCompile Include="src\string_util.cpp" />
