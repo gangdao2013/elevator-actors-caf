@@ -22,6 +22,16 @@ using namespace elevator;
 namespace elevator
 {
 
+	// elevator_actor represents elevators moving up and down.
+	// They are scheduled by dispatcher_actor and class scheduler.
+	// Elevators are 'tasked' with schedules of floor waypoints; the dispatcher maintains lists of pickups and dropoffs
+	// for each floor in any schedule.
+
+	// Elevators work hand-in-glove with an embedded finite state machine (FSM) elevator_fsm, to respond
+	// appropriately to incoming messages, events, etc., based on the current state.
+	// See elevator_fsm.cpp for more details.
+
+
 	elevator_actor::elevator_actor(actor_config& cfg, int elevator_number) :
 		event_based_actor(cfg)
 		, cfg_{ cfg }
@@ -35,7 +45,7 @@ namespace elevator
 	}
 
 	// override for actor behaviour
-	// note that messages received by the actor are immediately delegated to the FSM
+	// note that messages received by the actor are mostly delegated to the FSM
 	behavior elevator_actor::make_behavior()
 	{
 		return {
@@ -103,7 +113,6 @@ namespace elevator
 	// cya
 	void elevator_actor::on_quit()
 	{
-
 		anon_send_exit(this, exit_reason::user_shutdown);
 	}
 
@@ -170,16 +179,16 @@ namespace elevator
 	// waypoint floor received from controller
 	void elevator_actor::on_waypoint_received(int waypoint_floor)
 	{
-		if (waypoint_floor > elevator::FLOOR_MAX || waypoint_floor < elevator::FLOOR_MIN)
+		if (waypoint_floor > elevator::TOP_FLOOR || waypoint_floor < elevator::BOTTOM_FLOOR)
 			return;
-		waypoint_floors.emplace(waypoint_floor); // simple fifo behaviour for now
+		waypoint_floors.push(waypoint_floor); // Note that elevator will visit floors in order received, usually ascending or descending
 	}
 
 	// no more waypoints/passengers, let the controller know and then wait for a job from the controller
 	void elevator_actor::on_idle()
 	{
 		if(dispatcher)
-			send(dispatcher, elevator_idle_atom::value, elevator_number);
+			send(dispatcher, elevator_idle_atom::value, elevator_number, current_floor);
 
 	}
 
@@ -204,11 +213,13 @@ namespace elevator
 			send(dispatcher, elevator::waypoint_arrived_atom::value, elevator_number, current_floor);
 	}
 
+	// timer is used to simulate travel between floors or delay at waitpoint while passenger embark/disembark
 	void elevator_actor::timer_pulse(int seconds)
 	{
 		delayed_send(this, std::chrono::seconds(seconds), elevator::timer_atom::value);
 	}
 
+	// send debug message to all subscribers, e.g. repl
 	void elevator_actor::debug_msg(std::string msg)
 	{
 		string subscriber_msg = "[elevator][" + std::to_string(elevator_number) + "][" + fsm->get_state_name() + "][" + std::to_string(current_floor) + "]: " + msg;
@@ -219,6 +230,8 @@ namespace elevator
 		}
 
 	}
+
+	// register debug message subscriber, e.g. repl actor
 	void elevator_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
 	{
 		// add subscriber to relevant subscriber map

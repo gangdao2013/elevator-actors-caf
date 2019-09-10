@@ -18,6 +18,8 @@ using namespace std;
 
 namespace elevator
 {
+	// Elevator read/evaluate/print/loop actor - used to listen for and send messages to controllers
+
 	elevator_repl_actor::elevator_repl_actor(actor_config& cfg, const actor& target_actor, std::string repl_id)
 		: repl_actor(cfg, target_actor, repl_id),
 		elevator_floor{ 0 }
@@ -29,6 +31,7 @@ namespace elevator
 			});
 	}
 
+	// Usage message
 	void elevator_repl_actor::usage()
 	{
 		std::string msg = 
@@ -41,11 +44,14 @@ namespace elevator
 
 		aout(this) << msg << std::flush;
 	}
+
+	// REPL prompt
 	std::string elevator_repl_actor::get_prompt()
 	{
 		return "[" + std::to_string(get_elevator_number()) + "][" + get_current_state_name() + "][" + std::to_string(get_current_floor()) + "]> ";
 	}
 
+	// Get elevator number - used in prompt
 	int elevator_repl_actor::get_elevator_number()
 	{
 		//if (elevator_number != 0)
@@ -60,6 +66,7 @@ namespace elevator
 		return elevator_number;
 	}
 
+	// Get current floor - used in prompt
 	int elevator_repl_actor::get_current_floor()
 	{
 		request(target_actor_, infinite, elevator::get_current_floor_atom::value)
@@ -71,6 +78,7 @@ namespace elevator
 		return elevator_floor;
 	}
 
+	// Get elevator state (e.g. idle/in transit) - used for prompt
 	std::string elevator_repl_actor::get_current_state_name()
 	{
 
@@ -83,6 +91,7 @@ namespace elevator
 		return elevator_state;
 	}
 
+	// Return the evaluator handler
 	message_handler elevator_repl_actor::get_eval()
 	{
 		message_handler eval
@@ -99,6 +108,7 @@ namespace elevator
 			},
 			[&](std::string& cmd, std::string& arg1)
 			{
+				// Set a waypoint, e.g. w 4
 				if (cmd == "w")
 				{
 					auto waypoint_floor = string_util::to_integer(arg1);
@@ -110,6 +120,7 @@ namespace elevator
 			},
 			[&](std::string& cmd, std::string& arg1, std::string& arg2)
 			{
+				// connect to controller
 				if (cmd == "connect" || cmd == "c")
 				{
 					char* end = nullptr;

@@ -8,6 +8,13 @@
 
 namespace passenger
 {
+	// passenter_actor represents passengers waiting in lobbys or in elevators, moving up and down.
+	// They make calls for floors to controller_actors, which in turn delegate to a dispatcher_actor for 
+	// scheduling and dispatch.
+
+	// Passengers work hand-in-glove with an embedded finite state machine (FSM) passenger_fsm, to respond
+	// appropriately to incoming messages, events, etc., based on the current state.
+	// See passenger_fsm.hpp/cpp for more details.
 
 	class passenger_actor : public event_based_actor
 	{
@@ -36,7 +43,9 @@ namespace passenger
 		int current_floor = 0;
 		int called_floor = 0;
 		std::string name;
+		int elevator_number = 0;
 
+		// passenger FSM, represented as a shared_ptr to an object representing the current state
 		std::shared_ptr<passenger_fsm> fsm;
 		void transition_to_state(std::shared_ptr<passenger_fsm> state);
 
@@ -51,11 +60,12 @@ namespace passenger
 		
 		void on_quit();
 
-		void debug_msg(std::string msg);
-
+		// register subscriber actors for debug messages
 		void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
 		std::map<std::string, strong_actor_ptr> debug_message_subscribers;
-
+		
+		// send debug message to subscribers
+		void debug_msg(std::string msg);
 	};
 
 

@@ -18,51 +18,23 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\controller_repl_actor.cpp" />
-    <ClCompile Include="src\dispatcher_actor.cpp" />
-    <ClCompile Include="src\repl_actor.cpp" />
-    <ClCompile Include="src\controller_actor.cpp" />
-    <ClCompile Include="src\elevator_actor.cpp" />
-    <ClCompile Include="src\elevator_fsm.cpp" />
-    <ClCompile Include="src\elevator_repl_actor.cpp" />
-    <ClCompile Include="src\passenger_actor.cpp" />
-    <ClCompile Include="src\passenger_fsm.cpp" />
-    <ClCompile Include="src\passenger_repl_actor.cpp" />
-    <ClCompile Include="src\string_util.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="elevator\controller_actor.hpp" />
-    <ClInclude Include="elevator\controller_repl_actor.hpp" />
-    <ClInclude Include="elevator\dispatcher_actor.hpp" />
-    <ClInclude Include="elevator\elevator.hpp" />
-    <ClInclude Include="elevator\elevator_actor.hpp" />
-    <ClInclude Include="elevator\elevator_fsm.hpp" />
-    <ClInclude Include="elevator\elevator_repl_actor.hpp" />
-    <ClInclude Include="elevator\passenger_actor.hpp" />
-    <ClInclude Include="elevator\passenger_fsm.hpp" />
-    <ClInclude Include="elevator\passenger_repl_actor.hpp" />
-    <ClInclude Include="elevator\repl_actor.hpp" />
-    <ClInclude Include="elevator\schedule.hpp" />
-    <ClInclude Include="elevator\string_util.hpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{07C35FB9-9B41-44A1-8DED-FD4CBE072100}</ProjectGuid>
+    <ProjectGuid>{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>elevator1</RootNamespace>
+    <RootNamespace>elevator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>elevator_core</ProjectName>
+    <ProjectName>elevator</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -120,8 +92,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\elevator_core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,8 +127,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)\elevator_core</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -185,6 +157,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\elevator_core\elevator.vcxproj">
+      <Project>{07c35fb9-9b41-44a1-8ded-fd4cbe072100}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

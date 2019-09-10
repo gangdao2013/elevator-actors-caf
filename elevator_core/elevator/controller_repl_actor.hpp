@@ -8,6 +8,8 @@
 
 namespace controller
 {
+	// controller read/evaluate/loop actor - presents a command line interface to a controller actor;
+	// use this to directly drive an actor
 	class controller_repl_actor : public elevator::repl_actor
 	{
 	public:
@@ -22,12 +24,9 @@ namespace controller
 		std::string controller_name;
 		std::string controller_state;
 
-
-		//int get_current_floor();
+		// auxilliary functions to get information from the controller_actor
 		std::string get_current_state_name();
 		std::string get_name();
-
-
 	};
 
 }

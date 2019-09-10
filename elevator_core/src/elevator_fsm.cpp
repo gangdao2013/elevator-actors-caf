@@ -6,12 +6,17 @@
 namespace elevator
 {
 
-	//std::shared_ptr<initialising_state> elevator_fsm::initalising(new initialising_state);
-	//std::shared_ptr<disconnected_state> elevator_fsm::disconnected(new disconnected_state);
-	//std::shared_ptr<idle_state> elevator_fsm::idle(new idle_state);
-	//std::shared_ptr<in_transit_state> elevator_fsm::in_transit(new in_transit_state);
-	//std::shared_ptr<at_waypoint_state> elevator_fsm::at_waypoint(new at_waypoint_state);
-	//std::shared_ptr<quitting_state> elevator_fsm::quitting(new quitting_state);
+	// Finite state machine for an elevator actor
+	// See elevator_fsm.hpp for more details.
+
+	// In general, specific states can elect to override on_exit(), on_enter, and the various handle_* event functions.
+	// These functions then delegate to or coordinate actions on the associated actor.
+
+
+	// Create the shared_ptrs for each of the elevator states, these are set as static variables
+	// on class elevator_fsm. This pattern is OK for FSMs that don't need to store 'state' in states; if this is necessary
+	// then the code just needs to be changed to create an instance of the template state (elevator_fsm in this instance) and separate instances
+	// of the state classes for each actor.
 
 	const std::shared_ptr<initialising_state> elevator_fsm::initalising = std::make_shared<initialising_state>();
 	const std::shared_ptr<disconnected_state> elevator_fsm::disconnected = std::make_shared<disconnected_state>();
@@ -34,6 +39,8 @@ namespace elevator
 	}
 
 
+	/// Initialising
+
 	void initialising_state::on_enter(elevator_actor& actor)
 	{
 		if (actor.on_initialise())
@@ -49,6 +56,8 @@ namespace elevator
 		actor.fsm->handle_start(actor);
 	}
 
+	/// Idle
+
 	void idle_state::on_enter(elevator_actor& actor)
 	{
 		actor.on_idle();
@@ -59,6 +68,8 @@ namespace elevator
 		if (actor.on_start())
 			actor.transition_to_state(elevator_fsm::in_transit);
 	}
+
+	// In Transit
 
 	void in_transit_state::on_enter(elevator_actor& actor)
 	{
@@ -107,10 +118,12 @@ namespace elevator
 			actor.current_floor--;
 			actor.timer_pulse(elevator::FLOOR_TRANSIT_TIME_SEC);
 			break;
-		default: // TODO: default timer behaviour here??
+		default:
 			break;
 		}
 	}
+
+	/// At Waypoint (i.e. more waypoints to go, not idle)
 
 	void at_waypoint_state::on_enter(elevator_actor& actor)
 	{
@@ -131,6 +144,8 @@ namespace elevator
 			actor.transition_to_state(elevator_fsm::in_transit);
 		}
 	}
+
+	/// Quitting
 
 	void quitting_state::on_enter(elevator_actor& actor)
 	{

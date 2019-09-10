@@ -21,12 +21,14 @@ using namespace dispatcher;
 namespace controller
 {
 
+	// controller_actor is the central controller/supervisor of the network of actors.
+	// elevator_actors and passenger_actors register with a controller
 
 	controller_actor::controller_actor(actor_config& cfg) : event_based_actor(cfg)
 	{
 
+		// Create dispatcher
 		auto x = spawn<dispatcher_actor>(this);
-		
 		dispatcher = actor_cast<strong_actor_ptr>(x);
 
 		monitor(dispatcher);
@@ -47,12 +49,17 @@ namespace controller
 		//		return sec::unexpected_message;
 		//	});
 
+		// ignore errors
 		set_error_handler([=](scheduled_actor* actor, error& err) -> void
 			{
 				aout(this) << "controller: error: " << err << std::endl;
 			});
 	}
 
+	// Overridden make_behaviour function - required for actor classes
+	// What is returned is an initialiser list of message handling lambdas that are used as the input
+	// to a behavior constructor.
+	// CAF matches incoming messages against the types of the handler lambda functions.
 
 	behavior controller_actor::make_behavior()
 	{
@@ -75,43 +82,7 @@ namespace controller
 				debug_msg("register_passenger_atom received");
 				auto passenger = current_sender();
 				send(dispatcher, register_passenger_atom::value, passenger);
-			},
-			//[=](call_atom, int from_floor, int to_floor) 
-			//{
-			//	debug_msg("call_atom received, from_floor: " + std::to_string(from_floor) + ", to_floor: " + std::to_string(to_floor));
-			//	
-			//	auto passenger = current_sender();
-			//	send(dispatcher, call_atom::value, passenger, from_floor, to_floor);
-
-			//	//self->state.passenger_from_floor = from_floor;
-			//	//self->state.passenger_to_floor = to_floor;
-			//	//if (self->state.elevator)
-			//	//{
-			//	//	self->send(self->state.elevator, elevator::waypoint_atom::value, from_floor);
-			//	//	self->send(self->state.elevator, elevator::waypoint_atom::value, to_floor);
-			//	//}
-			//	
-			//},
-			//[=](elevator_idle_atom, int elevator_number)
-			//{
-			//	debug_msg("elevator_idle_atom received, elevator: " + std::to_string(elevator_number));
-			//	send(dispatcher, elevator_idle_atom::value, elevator_number);
-			//},
-			//[=](waypoint_arrived_atom, int elevator_number, int floor)
-			//{
-			//	debug_msg("waypoint_arrived_atom received, elevator: " + std::to_string(elevator_number) + ", floor: " + std::to_string(floor));
-			//	send(dispatcher, waypoint_arrived_atom::value, elevator_number, floor);
-			//	//aout(self) << "\ncontroller: waypoint_arrived_atom received, floor: " << floor << endl;
-			//	//if(self->state.passenger)
-			//	//{
-			//	//	if(floor == self->state.passenger_from_floor)
-			//	//		self->send(self->state.passenger, elevator::elevator_arrived_atom::value);
-			//	//	else if(floor == self->state.passenger_to_floor)
-			//	//		self->send(self->state.passenger, elevator::destination_arrived_atom::value, floor);
-			//	//}
-
-			//}
-			
+			},			
 			[=](elevator::subscribe_atom sub, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				// subscribe to dispatcher events too
@@ -138,6 +109,7 @@ namespace controller
 		};
 	}
 
+	// send message to all debug message subscribers
 	void controller_actor::debug_msg(std::string msg)
 	{
 		string subscriber_msg = "[dispatcher][running]: " + msg;
@@ -149,6 +121,7 @@ namespace controller
 
 	}
 
+	// register debug message subscribers
 	void controller_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
 	{
 		// add subscriber to relevant subscriber map

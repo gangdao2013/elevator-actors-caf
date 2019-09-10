@@ -7,17 +7,26 @@
 
 using namespace caf;
 
+/*
 
+Elevator global definitions, 
+
+*/
 
 namespace elevator
 {
 
-	const int FLOOR_MIN = 0;
-	const int FLOOR_MAX = 10;
+	const int BOTTOM_FLOOR = 0; // ground floor
+	const int TOP_FLOOR = 10; // top floor
+	const int MAX_FLOORS = 11; // total floors
+	const int ELEVATOR_CAPACITY_MAX = 2; // adjust this to see the effect it has on scheduling elevators.
 
 	const int FLOOR_TRANSIT_TIME_SEC = 1; // # seconds it takes to transit from one floor to the next, in either direction
 	const int AT_WAYPOINT_TIME_SEC = 2; // # seconds the elevator will wait at a waypoint, before moving into in_transit state
 
+
+
+	// Actor message atoms:
 
 	using connect_to_controller_atom = atom_constant<atom("c_t_c")>;
 	using get_current_state_name_atom = atom_constant<atom("g_s")>;
@@ -48,9 +57,12 @@ namespace elevator
 	using set_number_atom = atom_constant<atom("num")>;
 
 	using register_dispatcher_atom = atom_constant<atom("r_d")>;
-
+	using dispatch_idle_atom = atom_constant<atom("d")>;
 
 	using quit_atom = atom_constant<atom("quit")>;
+
+
+	// Actor system config - see CAF doco for details
 
 	class config : public actor_system_config {
 	public:

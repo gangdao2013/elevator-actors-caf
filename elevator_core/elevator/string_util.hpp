@@ -6,6 +6,9 @@
 
 #include "caf/all.hpp"
 
+
+// String utilites used by REPL code
+
 namespace string_util
 {
 	struct splitter
@@ -13,6 +16,8 @@ namespace string_util
 		enum empties_t { empties_ok, no_empties };
 	};
 
+
+	// Split a string into Container type based on supplied delimiter.
 	template <typename Container>
 	Container& split(
 		Container& result,
