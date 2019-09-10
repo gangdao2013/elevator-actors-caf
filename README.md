@@ -84,7 +84,7 @@ The solution consists of three VS 2019 C++ projects:
 * elevator_tests: (32 bit tests) VS 2019 Native C++ test library.
 
 As mentioned above, the solution has a dependency on the CAF libraries, which I found easiest to install and integrate into VS 2019 via vcpkg. At some stage I'll shift over to a cross-platform CMake-based solution.
-On the Windows platform, CAF also has a dependency on these libraries: ws2_32.lib;wsock32.lib;Iphlpapi.lib; - if you are ever doing your project, make sure you include them as additional libraries.
+On the Windows platform, CAF also has a dependency on these libraries: ws2_32.lib;wsock32.lib;Iphlpapi.lib; - if you are ever doing your own project, make sure you include them as additional libraries.
 
 ### Debugging the Solution
 It's pretty to debug or step through the code in Visual Studio, for any of the modes. Just set the 'elevator' project as your start up project, and set the relevant mode command line options in the Debug section of the project properties dialog (e.g. -C).
