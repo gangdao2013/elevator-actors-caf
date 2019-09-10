@@ -99,4 +99,4 @@ Check for const refs, wrong actor types, wrong message tuple types, etc.
 
 ## License
 
-See the [LICENCE](./LICENSE.md) file for license rights and limitations (+ Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
+See the ![LICENCE](./LICENCE.md) file for license rights and limitations (+ Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
