@@ -57,15 +57,21 @@ namespace dispatcher
 				auto passenger = current_sender();
 				auto journey_ = std::make_unique<journey>(passenger, from_floor, to_floor);
 				schedule_journey(std::move(journey_));
-				//dispatch_idle_elevators();
+				timer_pulse(5);
 			},
+
 			[=](request_elevator_schedule_atom, int elevator_number)
 			{
 				debug_msg("dispatcher: request_elevator_schedule_atom received, for elevator: " + std::to_string(elevator_number));
 			},
-			[=](dispatch_atom)
+			[=](dispatch_idle_atom)
 			{
-
+				dispatch_idle_elevators();
+			},
+			[=](timer_atom)
+			{
+				dispatch_idle_elevators();
+				timer_guard = false;
 			},
 			[=](elevator_idle_atom, int elevator_number, int floor)
 			{
@@ -73,7 +79,8 @@ namespace dispatcher
 				elevator_statuses[elevator_number].idle = true;
 				elevator_statuses[elevator_number].motion = elevator_motion::stationary;
 				elevator_statuses[elevator_number].current_floor = floor;
-				//dispatch_idle_elevators();
+				elevator_statuses[elevator_number].waypoints.clear();
+				timer_pulse(5);
 			},
 			[=](waypoint_arrived_atom, int elevator_number, int floor_number)
 			{
@@ -118,6 +125,12 @@ namespace dispatcher
 
 			},
 		};
+	}
+
+	void dispatcher_actor::timer_pulse(int seconds)
+	{
+		if(!timer_guard)
+			delayed_send(this, std::chrono::seconds(seconds), elevator::timer_atom::value);
 	}
 
 	void dispatcher_actor::schedule_journey(std::unique_ptr<journey> journey)
@@ -172,7 +185,6 @@ namespace dispatcher
 
 	void dispatcher_actor::dispatch_idle_elevators()
 	{
-		std::cout << "\ndispatch_idle_elevators 1\n" << std::flush;
 		// Down journeys first
 		if (down_schedules.size() > 0)
 		{
@@ -187,7 +199,6 @@ namespace dispatcher
 					elevator_statuses[i].waypoints.clear();
 
 					// set up and dispatch the waypoints for the elevator
-					std::cout << "\ndispatch_idle_elevators 2\n" << std::flush;
 					auto waypoints = std::move(down_schedules.front().get_waypoints_queue());
 					while (waypoints.size() > 0)
 					{
@@ -256,9 +267,7 @@ namespace dispatcher
 				return i;
 		}
 
-		elevator_status status(elevator);
-//		status.elevator = std::move(elevator);
-
+		elevator_status status(elevator); // NB: move constructor
 
 		elevator_statuses.push_back(std::move(status));
 		monitor(elevator);

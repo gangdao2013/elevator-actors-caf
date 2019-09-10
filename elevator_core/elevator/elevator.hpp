@@ -50,7 +50,7 @@ namespace elevator
 	using set_number_atom = atom_constant<atom("num")>;
 
 	using register_dispatcher_atom = atom_constant<atom("r_d")>;
-	using dispatch_atom = atom_constant<atom("d")>;
+	using dispatch_idle_atom = atom_constant<atom("d")>;
 
 
 	using quit_atom = atom_constant<atom("quit")>;

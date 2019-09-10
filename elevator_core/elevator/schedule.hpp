@@ -17,9 +17,6 @@ using namespace elevator;
 namespace schedule
 {
 
-	//using pickup_list_t<P> = std::vector<P>;
-	//using dropoff_list_t<P> = std::vector<P>;
-
 	using UP = std::less<int>;
 	using DOWN = std::greater<int>;
 
@@ -59,7 +56,6 @@ namespace schedule
 	{
 	public:
 
-		//elevator_schedule();
 		elevator_schedule()
 		{
 			for (int i = 0; i < MAX_FLOORS; i++)

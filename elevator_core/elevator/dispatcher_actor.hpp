@@ -44,15 +44,6 @@ namespace dispatcher
 		//bool operator < (passenger_journey const& other)const { return from_floor < other.from_floor; }
 	};
 
-	using journey_queue_t = std::queue<std::unique_ptr<journey>>;
-	using journey_queue_list_t = std::vector<journey_queue_t>;
-
-	typedef std::queue<strong_actor_ptr> floor_pickup_wait_queue_t;
-	typedef std::vector<strong_actor_ptr> actor_list_t;
-
-
-	//using down_elevator_schedule = std::map<int, std::unique_ptr<elevator_schedule_item>>;
-
 	struct elevator_status
 	{
 		strong_actor_ptr elevator;
@@ -114,11 +105,8 @@ namespace dispatcher
 
 		void debug_msg(std::string msg);
 
-		//std::queue<std::unique_ptr<journey>> undispached_journeys;
-		//std::queue<strong_actor_ptr> idle_elevators;
-
-		//std::set<int, std::vector<int>, std::less<int>> down_waypoints;
-		//std::set<int, std::vector<int>, std::greater<int>> up_waypoints;
+		bool timer_guard = false;
+		void timer_pulse(int seconds);
 
 		int register_elevator(const strong_actor_ptr& elevator);
 		std::vector<elevator_status> elevator_statuses;
@@ -128,13 +116,9 @@ namespace dispatcher
 
 		void schedule_journey(std::unique_ptr<journey> journey);
 		void dispatch_idle_elevators();
-
 		void notify_passengers(int elevator_number, int floor_number);
 
-		//journey_queue_list_t up_journey_queues; 
 		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::UP>> up_schedules;
-
-		//journey_queue_list_t down_journey_queues;
 		std::deque<schedule::elevator_schedule<strong_actor_ptr, schedule::DOWN>> down_schedules;
 
 	};
