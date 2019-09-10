@@ -4,6 +4,7 @@ This is a demo project in C++ showing the C++ Actor Framework (CAF) being used t
 
 See more information about CAF here: http://www.actor-framework.org
 
+##Set up
 The project is currently structured as a Visual Studio 2019 C++ solution, that relies on the CAF vcpkg being installed user-globally. At some stage I plan to move this over to CMake.
 
 The project is using GitFlow workflow; see develop and feature branches for latest code.
@@ -34,19 +35,20 @@ Each mode presents a REPL that you can use to drive the underlying actor(s). The
 Note that the application can be run across a network, e.g. a Passenger can connect to a Controller on a different machine. In this instance specify the host & port of the Controller when starting a Passenger or Elevator, through the --host and --port options. 
 
 Modes in more detail:
+---------------------
 
-Controller mode: 
-----------------
+##Controller mode: 
+
 Runs as the main controller/supervisor for the system. An embedded controller actor and linked controller REPL actor will start.
 It doesn't (yet) monitor/respawn actors, but planned for the future. 
 
 Usage:
-
-> elevator.exe -C --port <port number, default 10000> 
+```
+elevator.exe -C --port <port number, default 10000> 
+```
 ...will start a controller on localhost on default port 10000 (you can change this in elevator/elevator.hpp). Run one controller per session.
 
-Elevator mode: 
---------------
+##Elevator mode: 
 Runs as an elevator. An embedded elevator actor and linked elevator REPL will start.
 
 Usage:
@@ -58,8 +60,7 @@ elevator.exec -E --host <host-name> --port <port number, default 10000>
 You can run multiple elevators per session, in separate command windows. Each elevator has default capacity of 2 passengers, 
 change this in elevator/elevator.hpp. Future versions will have capacity be a command line option.
 
-Passenger mode:
---------------
+##Passenger mode:
 Runs as a passenger. An embedded passenger actor and linked passenger REPL will start.
 
 Usage:
@@ -74,12 +75,13 @@ e.g. 'c 6' - this will call for an elevator from the passenger's current floor t
 Have an experiment with multiple passengers (in multiple command windows) calling for elevators (running in their own command windows.)
 Each actor prints a detailed log of their events & actions.
 
-### Solution Structure
+Solution Structure
+------------------
 The solution consists of three VS 2019 C++ projects:
 
-elevator: (32 bit exe) The application code.
-elevator_core: (32 bit static lib) Library project, containing headers and code for all the elevator actors, FSMs and supporting classes.
-elevator_tests: (32 bit tests) VS 2019 Native C++ test library.
+* elevator: (32 bit exe) The application code.
+* elevator_core: (32 bit static lib) Library project, containing headers and code for all the elevator actors, FSMs and supporting classes.
+* elevator_tests: (32 bit tests) VS 2019 Native C++ test library.
 
 As mentioned above, the solution has a dependency on the CAF libraries, which I found easiest to install and integrate into VS 2019 via vcpkg. At some stage I'll shift over to a cross-platform CMake-based solution.
 On the Windows platform, CAF also has a dependency on these libraries: ws2_32.lib;wsock32.lib;Iphlpapi.lib; - if you are ever doing your project, make sure you include them as additional libraries.
@@ -95,6 +97,6 @@ Controllers, Passengers and Elevators are all modelled and simulated using CAF a
 CAF uses a lot of C++ template meta-programming (see the CAF docs & code for why). This will commonly lead to much frustration when you are starting programming with CAF, for example, a seemingly innocuous error in your CAF code (not reported in the editor) will result in a compiler error several levels deep in some obscure CAF header file. If this happens to you, don't rely on the error code reported in the Visual Studio error window - best place to start is by carefully tracing the compilation backwards through the output window until you come upon your source file immediately before all the CAF source; most likely that's where the problem will be.
 Check for const refs, wrong actor types, wrong message tuple types, etc.
 
-### License
+## License
 
-See the [LICENSE](LICENSE.md) file for license rights and limitations (MIT + Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
+See the (LICENSE.md) file for license rights and limitations (+ Nice lunch for me if you use the code in a commercial product. That's fair enough isn't it?).
