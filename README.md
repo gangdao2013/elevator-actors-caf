@@ -86,12 +86,29 @@ The solution consists of three VS 2019 C++ projects:
 As mentioned above, the solution has a dependency on the CAF libraries, which I found easiest to install and integrate into VS 2019 via vcpkg. At some stage I'll shift over to a cross-platform CMake-based solution.
 On the Windows platform, CAF also has a dependency on these libraries: ws2_32.lib;wsock32.lib;Iphlpapi.lib; - if you are ever doing your own project, make sure you include them as additional libraries.
 
-### Debugging the Solution
-It's pretty to debug or step through the code in Visual Studio, for any of the modes. Just set the 'elevator' project as your start up project, and set the relevant mode command line options in the Debug section of the project properties dialog (e.g. -C).
-Once you fire up elevator (in whatever mode) in VS, then you can start another elevator.exe in a different mode in a separate command window (or even a separate VS 2019 instance.)
+## Overview
+
+The application models elevators using CAF actors. It utilises the actor model to achieve concurrent processing, without the hassle of thread management, resource contention, etc.
+
+Broadly:
+
+* controller*.cpp: The code for elevator controllers and their REPL actors.
+* elevator*.cpp: The code for elevator actors, their associated finite state machines (FSMs) and their REPL actors.
+* passenger*.cpp: The code for passenger actors, their associated finite state machines (FSMs) and their REPL actors.
+* dispatcher_actor.cpp: The code for scheduling and dispatching passenger journeys to elevators.
+
+Also, see the code in elevator/schedule.hpp for the data structures and algorithms relating to scheduling.
+
+The scheduling algorithm, broadly, revolves around the concept of up/down schedule classes, containing ordered lists of schedule items for each floor in a building. A schedule item contains information about passenger pickups and drop offs at its floor. The schedule class manages and checks capacity as passenger journey requests come in. If there is sufficient capacity (i.e. the elevator is not overloaded at any stage) then a journey is accepted into the schedule. If there is insufficient capacity then the journey is added to a later departing schedule.
+
+As schedules are finalised, on a timer basis for now, they are dispatched to the first available idle elevator. The dispatch process favours downwards schedules - a future refinement would be to have more sophisticated dispatch based on demand, wait times, time of day, etc.
 
 ### Actors and Finite State Machines
 Controllers, Passengers and Elevators are all modelled and simulated using CAF actors that delegate received messages to an embedded finite state machine (FSM). The FSMs call back into their attached actors to perform specific actions. The FSM model is broadly based on the GOF State pattern, but using shared_ptrs to transition between states and overridden event handler functions. See the various _fsm and _actor classes and headers for details.
+
+### Debugging the Solution
+It's pretty easy to debug or step through the code in Visual Studio, for any of the modes. Just set the 'elevator' project as your start up project, and set the relevant mode command line options in the Debug section of the project properties dialog (e.g. -C).
+Once you fire up elevator (in whatever mode) in VS, then you can start another elevator.exe in a different mode in a separate command window (or even a separate VS 2019 instance.)
 
 ### Developing using CAF
 CAF uses a lot of C++ template meta-programming (see the CAF docs & code for why). This will commonly lead to much frustration when you are starting programming with CAF, for example, a seemingly innocuous error in your CAF code (not reported in the editor) will result in a compiler error several levels deep in some obscure CAF header file. If this happens to you, don't rely on the error code reported in the Visual Studio error window - best place to start is by carefully tracing the compilation backwards through the output window until you come upon your source file immediately before all the CAF source; most likely that's where the problem will be.
