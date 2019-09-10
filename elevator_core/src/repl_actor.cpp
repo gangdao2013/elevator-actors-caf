@@ -17,6 +17,8 @@ using namespace elevator;
 
 namespace elevator
 {
+	// next_command_actor is used to asynchronously get commands from the user.
+	// This is so we can wait on commands without blocking, enabling (for example) incoming messages to be displayed.
 
 	behavior next_command_actor(event_based_actor* self)
 	{
@@ -36,6 +38,8 @@ namespace elevator
 		};
 	}
 
+	// repl_actors are pretty simple
+	// They just start, wait for commands from next_command_actors, evaluate commands and display results
 	behavior repl_actor::make_behavior()
 	{
 		return
@@ -71,23 +75,28 @@ namespace elevator
 		return;
 	}
 
+	// Start
 	void repl_actor::start_repl()
 	{
+		// NB: get_eval() is overriden by child classes, returns a handler specific to that repl class and target_actor
+		message_handler eval = get_eval(); 
+		// this lets the target_actor know we want (debug) messages
+		send(target_actor_, subscribe_atom::value, repl_id_, elevator_observable_event_type::debug_message); 
 
-		message_handler eval = get_eval();
-		send(target_actor_, subscribe_atom::value, repl_id_, elevator_observable_event_type::debug_message);
-
-		usage();
+		usage(); // overridden by child class
 		command_actor = spawn(next_command_actor);
 		send(command_actor, get_prompt());
 	}
 
+	// Evaluate a command (represented as a vector of strings) received from the command_actor
 	void repl_actor::eval_command(std::vector<std::string> command)
 	{
-		message_handler eval = get_eval();
+		message_handler eval = get_eval(); // handler is specific to each child class
 		if (command.size() > 0)
 		{
-			if (!message_builder(command.begin(), command.end()).apply(eval))
+			// The .apply(eval) method evaluates eval/message_handler against the constructed message object (from the commands)
+			// It's a handy reuse of the CAF message handling & matching code for our REPL purposes.
+			if (!message_builder(command.begin(), command.end()).apply(eval)) 
 				usage();
 		}
 	}

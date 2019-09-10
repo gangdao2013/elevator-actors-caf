@@ -6,6 +6,20 @@
 namespace elevator
 {
 
+	/*
+	
+	Elevator finite state machine; broadly based on GOF State pattern, with a major difference being
+	that events are reified as calls to the various handle_* functions. States & substates then override these
+	handler functions as appropriate.
+
+	Generally, the handler functions call back into the elevator actor to have it respond - in this sense the FSM is 
+	a coordinator of elevator actor actions.
+
+	Note: many of the CAF examples achieve FSM-like behaviour by switching around message_handlers; I prefer this approach as 
+	it is more testable, and involves less code duplication.
+	
+	*/
+
 
 	// State transition for the elevator for connecting to the elevator controller, making calls, in transit, etc:
 	//

@@ -6,6 +6,20 @@
 namespace passenger
 {
 
+	/*
+
+	Passenger finite state machine; broadly based on GOF State pattern, with a major difference being
+	that events are reified as calls to the various handle_* functions. States & substates then override these
+	handler functions as appropriate.
+
+	Generally, the handler functions call back into the passenger actor to have it respond - in this sense the FSM is
+	a coordinator of passenger actor actions.
+
+	Note: many of the CAF examples achieve FSM-like behaviour by switching around message_handlers; I prefer this approach as
+	it is more testable, and involves less code duplication.
+
+	*/
+
 
 	// State transition for the passenger for connecting to the elevator controller, making calls, in transit, etc:
 	//
@@ -63,7 +77,7 @@ namespace passenger
 		virtual void handle_initialise(passenger_actor& actor) {};
 		virtual void handle_connect(passenger_actor& actor, std::string host, uint16_t port);
 		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) {};
-		virtual void handle_elevator_arrived(passenger_actor& actor) {};
+		virtual void handle_elevator_arrived(passenger_actor& actor, int elevator_number) {};
 		virtual void handle_destination_arrived(passenger_actor& actor, int arrived_at_floor) {};
 		virtual void handle_quit(passenger_actor& actor);
 		
@@ -96,7 +110,7 @@ namespace passenger
 		void on_enter(passenger_actor& actor) override;
 
 		virtual void handle_call(passenger_actor& actor, int from_floor, int to_floor) override;
-		virtual void handle_elevator_arrived(passenger_actor& actor) override;
+		virtual void handle_elevator_arrived(passenger_actor& actor, int elevator_number) override;
 
 		virtual std::string get_state_name() override { return "in_lobby"; };
 	};

@@ -7,6 +7,7 @@ using namespace std;
 
 namespace string_util
 {
+	// misc string utilities, mostly used in REPL code
 
 	// removes leading and trailing whitespaces
 	string trim(std::string s)

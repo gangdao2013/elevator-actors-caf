@@ -17,6 +17,8 @@ using namespace std;
 
 namespace passenger
 {
+	// Passenger read/evaluate/print/loop actor - used to listen for and send messages to controllers
+
 	passenger_repl_actor::passenger_repl_actor(actor_config& cfg, const actor& target_actor, std::string repl_id)
 		: repl_actor(cfg, target_actor, repl_id)
 	{
@@ -28,6 +30,7 @@ namespace passenger
 			});
 	}
 
+	// Usage message
 	void passenger_repl_actor::usage() 
 	{
 		std::string msg =
@@ -41,11 +44,13 @@ namespace passenger
 		aout(this) << msg << std::flush;
 	};
 
+	// REPL prompt
 	std::string passenger_repl_actor::get_prompt()
 	{
 		return "[" + get_name() + "][" + get_current_state_name() + "][" + std::to_string(get_current_floor()) + "]> ";
 	}
 
+	// Get current floor from passenger actor - used in prompt
 	int passenger_repl_actor::get_current_floor()
 	{
 		request(target_actor_, infinite, elevator::get_current_floor_atom::value)
@@ -57,9 +62,9 @@ namespace passenger
 		return passenger_floor;
 	}
 
+	// Get current state (e.g. in lobby/in elevator) from passenger actor - used in prompt
 	std::string passenger_repl_actor::get_current_state_name()
 	{
-
 		request(target_actor_, infinite, elevator::get_current_state_name_atom::value)
 		.await
 		(
@@ -69,7 +74,7 @@ namespace passenger
 		return passenger_state;
 	}
 
-
+	// Get name from passenger actor - used in prompt
 	std::string passenger_repl_actor::get_name()
 	{
 		if (passenger_name != "")
@@ -84,6 +89,7 @@ namespace passenger
 		return passenger_name;
 	}
 
+	// Get eval/message_handler - used by REPL to evaluate commands
 	message_handler passenger_repl_actor::get_eval()
 	{
 		message_handler eval
@@ -103,6 +109,7 @@ namespace passenger
 			},
 			[&](std::string& cmd, std::string& arg1)
 			{
+				// call for elevator from current floor to arg 1, e.g. "c 4", call for elevator to floor 4
 				if (cmd == "c")
 				{
 					auto to_floor = string_util::to_integer(arg1);

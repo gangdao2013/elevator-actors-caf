@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "elevator", "elevator_core\elevator.vcxproj", "{07C35FB9-9B41-44A1-8DED-FD4CBE072100}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "elevator_core", "elevator_core\elevator.vcxproj", "{07C35FB9-9B41-44A1-8DED-FD4CBE072100}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "elevator_tests", "elevator_tests\elevator_tests.vcxproj", "{6607EE99-D11B-4F74-B569-E5A531EF75FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "elevator", "elevator\elevator.vcxproj", "{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,22 @@ Global
 		{07C35FB9-9B41-44A1-8DED-FD4CBE072100}.Release|x64.Build.0 = Release|x64
 		{07C35FB9-9B41-44A1-8DED-FD4CBE072100}.Release|x86.ActiveCfg = Release|Win32
 		{07C35FB9-9B41-44A1-8DED-FD4CBE072100}.Release|x86.Build.0 = Release|Win32
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Debug|x64.ActiveCfg = Debug|x64
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Debug|x64.Build.0 = Debug|x64
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Debug|x86.ActiveCfg = Debug|Win32
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Debug|x86.Build.0 = Debug|Win32
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Release|x64.ActiveCfg = Release|x64
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Release|x64.Build.0 = Release|x64
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Release|x86.ActiveCfg = Release|Win32
+		{6607EE99-D11B-4F74-B569-E5A531EF75FF}.Release|x86.Build.0 = Release|Win32
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Debug|x64.ActiveCfg = Debug|x64
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Debug|x64.Build.0 = Debug|x64
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Debug|x86.ActiveCfg = Debug|Win32
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Debug|x86.Build.0 = Debug|Win32
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Release|x64.ActiveCfg = Release|x64
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Release|x64.Build.0 = Release|x64
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Release|x86.ActiveCfg = Release|Win32
+		{AAB0DB2E-AE4C-4306-9734-70CBFE4C2368}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
