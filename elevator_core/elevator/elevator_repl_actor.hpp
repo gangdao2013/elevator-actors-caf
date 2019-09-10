@@ -8,6 +8,11 @@
 
 namespace elevator
 {
+
+	// Elevator read/evaluate/print loop actor.
+	// As with other repl actors, this actor sends and receives messages to an elevator actor, via cin & cout.
+	// It can be used to monitor the behaviour of an actor, as well as send it commands directly - handy for development & testing.
+
 	class elevator_repl_actor: public elevator::repl_actor
 	{
 	public:

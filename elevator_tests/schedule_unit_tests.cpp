@@ -14,8 +14,10 @@ namespace schedule
 
 		TEST_METHOD(Test_has_capacity_up)
 		{
+			// Test the elevator_schedule class capacity methods in various combinations
 
-			schedule::elevator_schedule<std::string, UP> schedule;
+			// note the use of the parameterised std::string type - we don't have to test with actor objects
+			schedule::elevator_schedule<std::string, UP> schedule; 
 
 			bool result = schedule.has_capacity(BOTTOM_FLOOR, TOP_FLOOR, ELEVATOR_CAPACITY_MAX);
 			Assert::IsTrue(result);
@@ -39,7 +41,9 @@ namespace schedule
 
 		TEST_METHOD(Test_has_capacity_down)
 		{
+			// Test the elevator_schedule class capacity methods in various combinations
 
+			// note the use of the parameterised std::string type - we don't have to test with actor objects
 			schedule::elevator_schedule<std::string, DOWN> schedule;
 
 			bool result = schedule.has_capacity(TOP_FLOOR, BOTTOM_FLOOR, ELEVATOR_CAPACITY_MAX);
@@ -64,6 +68,9 @@ namespace schedule
 
 		TEST_METHOD(Test_max_capacity_down)
 		{
+			// Test the elevator_schedule class capacity methods in various combinations
+
+			// note the use of the parameterised std::string type - we don't have to test with actor objects
 			schedule::elevator_schedule<std::string, DOWN> schedule;
 
 			int capacity = schedule.max_capacity(TOP_FLOOR, BOTTOM_FLOOR);
@@ -77,6 +84,9 @@ namespace schedule
 
 		TEST_METHOD(Test_max_capacity_up)
 		{
+			// Test the elevator_schedule class capacity methods in various combinations
+
+			// note the use of the parameterised std::string type - we don't have to test with actor objects
 			schedule::elevator_schedule<std::string, UP> schedule;
 
 			int capacity = schedule.max_capacity(BOTTOM_FLOOR, TOP_FLOOR);

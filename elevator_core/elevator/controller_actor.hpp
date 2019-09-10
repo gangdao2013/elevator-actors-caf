@@ -5,7 +5,6 @@
 #include "caf/io/all.hpp"
 
 #include "elevator/elevator.hpp"
-
 #include "elevator/controller_repl_actor.hpp"
 
 
@@ -14,14 +13,8 @@ using namespace caf;
 namespace controller 
 {
 
-
-
-
-	struct controller_state
-	{
-		actor& dispatcher;
-		actor& elevator;
-	};
+	// controller_actor is the central controller/supervisor of the network of actors.
+	// elevator_actors and passenger_actors register with a controller
 
 	class controller_actor : public event_based_actor
 	{
@@ -34,11 +27,15 @@ namespace controller
 
 	protected:
 
+		// dispatcher is spawned by a controller, with passenger floor calls and elevator events
+		// being sent to the controller's dispatcher
 		strong_actor_ptr dispatcher;
 
+		// add a subscriber actor for debug messages; e.g. controller_repl_actor
 		void add_subscriber(const strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type);
 		std::map<std::string, strong_actor_ptr> debug_message_subscribers;
 
+		// send a debug message to all the registered subscriber actors
 		void debug_msg(std::string msg);
 
 

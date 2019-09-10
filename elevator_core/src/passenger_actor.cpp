@@ -19,11 +19,20 @@ using namespace elevator;
 
 namespace passenger
 {
+	// passenter_actor represents passengers waiting in lobbys or in elevators, moving up and down.
+	// They make calls for floors to controller_actors, which in turn delegate to a dispatcher_actor for 
+	// scheduling and dispatch.
+
+	// Passengers work hand-in-glove with an embedded finite state machine (FSM) passenger_fsm, to respond
+	// appropriately to incoming messages, events, etc., based on the current state.
+	// See passenger_fsm.hpp/cpp for more details.
+
 	passenger_actor::passenger_actor(actor_config& cfg, std::string name) :
 		event_based_actor(cfg)
 		, cfg_{ cfg }
 		, name{ name }
 	{
+		// start off on the right foot...
 		transition_to_state(passenger_fsm::initalising);
 
 		set_default_handler([=](scheduled_actor* actor, message_view& view)
@@ -34,6 +43,8 @@ namespace passenger
 
 	}
 
+	// override for actor behaviour
+	// note that messages received by the actor are mostly delegated to the FSM
 	behavior passenger_actor::make_behavior()
 	{
 		return {
@@ -87,7 +98,7 @@ namespace passenger
 		};
 	}
 
-
+	// send debug message to all registered subscribers
 	void passenger_actor::debug_msg(std::string msg)
 	{
 		string subscriber_msg = "[passenger][" + name + "][" + fsm->get_state_name() + "][" + std::to_string(current_floor) + "]: " + msg;
@@ -98,6 +109,8 @@ namespace passenger
 		}
 
 	}
+
+	// register debug message subscriber
 	void passenger_actor::add_subscriber(strong_actor_ptr subscriber, std::string subscriber_key, elevator::elevator_observable_event_type event_type)
 	{
 		// add subscriber to relevant subscriber map
@@ -192,15 +205,15 @@ namespace passenger
 
 	void passenger_actor::transition_to_state(std::shared_ptr<passenger_fsm> state)
 	{
-		//assert(this->state_ != nullptr);
 		if (this->fsm)
-			this->fsm->on_exit(*this);
+			this->fsm->on_exit(*this); // any previous state exit code
 		this->fsm = state;
-		this->fsm->on_enter(*this);
+		this->fsm->on_enter(*this); // an next state entry code
 	}
 
 	void passenger_actor::on_call(int from_floor, int to_floor)
 	{
+		// sanity check
 		if (from_floor > elevator::TOP_FLOOR
 			|| from_floor < elevator::BOTTOM_FLOOR
 			|| to_floor > elevator::TOP_FLOOR
@@ -210,10 +223,12 @@ namespace passenger
 
 		if (dispatcher)
 		{
-			send(dispatcher, elevator::call_atom::value, from_floor, to_floor);
+			send(dispatcher, elevator::call_atom::value, from_floor, to_floor); 
+			// dispatcher will take it from here, scheduling the requested journey
 		}
 	}
 
+	// we've arrived
 	void passenger_actor::on_arrive(int arrived_at_floor)
 	{
 		if (arrived_at_floor > elevator::TOP_FLOOR || arrived_at_floor < elevator::BOTTOM_FLOOR)
@@ -221,11 +236,13 @@ namespace passenger
 		current_floor = arrived_at_floor;
 	}
 
+	// into the elevator lobby
 	void passenger_actor::on_lobby()
 	{
 		aout(this) << "\npassenger: stepping into lobby" << endl;
 	}
 
+	// into the elevator
 	void passenger_actor::on_elevator()
 	{
 		aout(this) << "\npassenger: stepping into elevator" << endl;
