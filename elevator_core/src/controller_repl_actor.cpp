@@ -53,11 +53,11 @@ namespace controller
 	std::string controller_repl_actor::get_current_state_name()
 	{
 
-		request(target_actor_, infinite, elevator::get_current_state_name_atom::value)
+		request(target_actor_, infinite, get_current_state_name_atom_v)
 			.await
 			(
 				[&](string state) { controller_state = state; },
-				[&](error& err) { aout(this) << "error: " << this->system().render(err) << std::endl; }
+				[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; } // todo
 		);
 		return controller_state;
 	}
@@ -68,11 +68,11 @@ namespace controller
 		if (controller_name != "")
 			return controller_name;
 
-		request(target_actor_, infinite, elevator::get_name_atom::value)
+		request(target_actor_, infinite, get_name_atom_v)
 		.await
 		(
 			[&](string name) { controller_name = name; },
-			[&](error& err) { aout(this) << "error: " << this->system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; }
 		);
 		return controller_name;
 	}
@@ -90,7 +90,7 @@ namespace controller
 				if (cmd == "quit" || cmd == "q")
 				{
 					quit = true;
-					this->send(target_actor_, quit_atom::value);
+					this->send(target_actor_, quit_atom_v);
 				}
 				else if (cmd == "help" || cmd == "h") // help
 					usage();

@@ -35,10 +35,11 @@ namespace passenger
 		// start off on the right foot...
 		transition_to_state(passenger_fsm::initalising);
 
-		set_default_handler([=](scheduled_actor* actor, message_view& view)
+		set_default_handler([=](scheduled_actor* actor, message& view)
 			{
 				aout(this) << "passenger_actor: unknown message" << std::endl;
-				return sec::unexpected_message;
+				return skippable_result(view);
+				//return sec::unexpected_message;
 			});
 
 	}
@@ -90,7 +91,7 @@ namespace passenger
 			{
 				return name;
 			},
-			[=](elevator::subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
+			[=](elevator_subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				add_subscriber(current_sender(), subscriber_key, event_type);
 				debug_msg("subscribe_atom received");
@@ -105,7 +106,7 @@ namespace passenger
 		for (auto kv : debug_message_subscribers)
 		{
 			auto recipient = actor_cast<actor>(kv.second);
-			send(recipient, message_atom::value, subscriber_msg);
+			send(recipient, message_atom_v, subscriber_msg);
 		}
 
 	}
@@ -167,7 +168,7 @@ namespace passenger
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
 
-		request(mm, infinite, connect_atom::value, host, port)
+		request(mm, infinite, connect_atom_v, host, port)
 			.await
 			(
 				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
@@ -190,14 +191,14 @@ namespace passenger
 					this->controller = controller;
 					auto controller_hdl = actor_cast<actor>(controller);
 					this->monitor(controller_hdl);
-					this->send(controller, elevator::register_passenger_atom::value);
+					this->send(actor_cast<caf::actor>(controller), register_passenger_atom_v);
 					//result = true;
 					transition_to_state(passenger_fsm::in_lobby);
 				},
 				[host, port, this](const error& err)
 				{
 					aout(this) << R"(*** cannot connect to ")" << host << R"(":)"
-						<< port << " => " << this->system().render(err) << endl;
+						<< port << " => " <<err /*this->system().render(err)*/ << endl;
 					transition_to_state(passenger_fsm::disconnected);
 				}
 			);
@@ -223,7 +224,7 @@ namespace passenger
 
 		if (dispatcher)
 		{
-			send(dispatcher, elevator::call_atom::value, from_floor, to_floor); 
+			send(actor_cast<caf::actor>(dispatcher), call_atom_v, from_floor, to_floor);
 			// dispatcher will take it from here, scheduling the requested journey
 		}
 	}

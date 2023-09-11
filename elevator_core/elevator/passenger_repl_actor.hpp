@@ -12,7 +12,7 @@ namespace passenger
 	// As with other repl actors, this actor sends and receives messages to an passenger actor, via cin & cout.
 	// It can be used to monitor the behaviour of an actor, as well as send it commands directly - handy for development & testing.
 
-	class passenger_repl_actor: public elevator::repl_actor
+	class ELEVATOR_CORE_EXPORT passenger_repl_actor: public elevator::repl_actor
 	{
 	public:
 

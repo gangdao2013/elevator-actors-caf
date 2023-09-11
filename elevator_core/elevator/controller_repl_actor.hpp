@@ -10,7 +10,7 @@ namespace controller
 {
 	// controller read/evaluate/loop actor - presents a command line interface to a controller actor;
 	// use this to directly drive an actor
-	class controller_repl_actor : public elevator::repl_actor
+	class ELEVATOR_CORE_EXPORT controller_repl_actor : public elevator::repl_actor
 	{
 	public:
 

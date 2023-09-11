@@ -23,10 +23,11 @@ namespace passenger
 		: repl_actor(cfg, target_actor, repl_id)
 	{
 
-		set_default_handler([=](scheduled_actor* actor, message_view& view)
+		set_default_handler([=](scheduled_actor* actor, message& view)
 			{
 				aout(this) << "passenger_repl_actor: unknown message" << std::endl;
-				return sec::unexpected_message;
+				return skippable_result(view);
+				//return sec::unexpected_message;
 			});
 	}
 
@@ -53,11 +54,11 @@ namespace passenger
 	// Get current floor from passenger actor - used in prompt
 	int passenger_repl_actor::get_current_floor()
 	{
-		request(target_actor_, infinite, elevator::get_current_floor_atom::value)
+		request(target_actor_, infinite, get_current_floor_atom_v)
 		.await
 		(
 			[&](int floor) {passenger_floor = floor; },
-			[&](error& err) { aout(this) << "error: " << this->system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; }
 		);
 		return passenger_floor;
 	}
@@ -65,11 +66,11 @@ namespace passenger
 	// Get current state (e.g. in lobby/in elevator) from passenger actor - used in prompt
 	std::string passenger_repl_actor::get_current_state_name()
 	{
-		request(target_actor_, infinite, elevator::get_current_state_name_atom::value)
+		request(target_actor_, infinite, get_current_state_name_atom_v)
 		.await
 		(
 			[&](string state) {passenger_state = state; },
-			[&](error& err) { aout(this) << "error: " << this->system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; }
 		);
 		return passenger_state;
 	}
@@ -80,11 +81,11 @@ namespace passenger
 		if (passenger_name != "")
 			return passenger_name;
 
-		this->request(target_actor_, infinite, elevator::get_name_atom::value)
+		this->request(target_actor_, infinite, get_name_atom_v)
 		.await
 		(
 			[&](string name) { passenger_name = name; },
-			[&](error& err) { aout(this) << "error: " << this->system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; }
 		);
 		return passenger_name;
 	}
@@ -99,11 +100,11 @@ namespace passenger
 				if (cmd == "quit" || cmd == "q")
 				{
 					quit = true;
-					this->send(target_actor_, quit_atom::value);
+					this->send(target_actor_, quit_atom_v);
 				} 
 				else if (cmd == "ea") // lift arrives
 				{
-					send(target_actor_, embark_atom::value);
+					send(target_actor_, embark_atom_v);
 				} else if (cmd == "help" || cmd == "h") // help
 					usage();
 			},
@@ -115,7 +116,7 @@ namespace passenger
 					auto to_floor = string_util::to_integer(arg1);
 					if (to_floor.has_value())
 					{
-						this->send(target_actor_, call_atom::value, to_floor.value());
+						this->send(target_actor_, call_atom_v, to_floor.value());
 					}
 				}
 				else if (cmd == "da") // elevator arrives at destination
@@ -123,7 +124,7 @@ namespace passenger
 					auto floor = string_util::to_integer(arg1);
 					if (floor.has_value())
 					{
-						send(target_actor_, disembark_atom::value, floor.value());
+						send(target_actor_, disembark_atom_v, floor.value());
 					}
 				}
 			},
@@ -144,7 +145,7 @@ namespace passenger
 					else
 					{
 						std::string host = arg1;
-						send(target_actor_, connect_to_controller_atom::value, host, lport);
+						send(target_actor_, connect_to_controller_atom_v, host, lport);
 					}
 				}
 			}

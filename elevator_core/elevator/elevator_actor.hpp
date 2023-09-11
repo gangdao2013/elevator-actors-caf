@@ -34,7 +34,7 @@ namespace elevator
 	// appropriately to incoming messages, events, etc., based on the current state.
 	// See elevator_fsm.cpp for more details.
 
-	class elevator_actor : public event_based_actor
+	class ELEVATOR_CORE_EXPORT elevator_actor : public event_based_actor
 	{
 
 		friend class elevator_fsm;

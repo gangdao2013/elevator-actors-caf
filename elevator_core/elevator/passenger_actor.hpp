@@ -16,7 +16,7 @@ namespace passenger
 	// appropriately to incoming messages, events, etc., based on the current state.
 	// See passenger_fsm.hpp/cpp for more details.
 
-	class passenger_actor : public event_based_actor
+	class ELEVATOR_CORE_EXPORT passenger_actor : public event_based_actor
 	{
 		friend class passenger_fsm;
 		friend class initialising_state;

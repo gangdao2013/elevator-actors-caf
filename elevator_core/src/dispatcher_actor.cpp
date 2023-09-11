@@ -91,8 +91,8 @@ namespace dispatcher
 				debug_msg("register_elevator_atom received");
 				//auto elevator = current_sender();
 				int elevator_number = register_elevator(elevator);
-				send(elevator, register_dispatcher_atom::value);
-				send(elevator, set_number_atom::value, elevator_number);
+				send(actor_cast<caf::actor>(elevator), register_dispatcher_atom_v);
+				send(actor_cast<caf::actor>(elevator), set_number_atom_v, elevator_number);
 			},
 			[=](register_passenger_atom, strong_actor_ptr passenger)
 			{
@@ -100,7 +100,7 @@ namespace dispatcher
 				debug_msg("register_passenger_atom received");
 				//auto passenger = current_sender();
 				register_passenger(passenger);
-				send(passenger, register_dispatcher_atom::value);
+				send(actor_cast<caf::actor>(passenger), register_dispatcher_atom_v);
 			},
 			[=](get_current_state_name_atom)
 			{
@@ -110,14 +110,14 @@ namespace dispatcher
 			{
 				return "dispatcher";
 			},
-			[=](elevator::subscribe_atom sub, std::string subscriber_key, elevator_observable_event_type event_type)
+			[=](elevator_subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				// subscribe to dispatcher events too
 				add_subscriber(current_sender(), subscriber_key, event_type);
 				debug_msg("subscribe_atom received");
 
 			},
-			[=](elevator::subscribe_atom sub, strong_actor_ptr subscriber, std::string subscriber_key, elevator_observable_event_type event_type)
+			[=](elevator_subscribe_atom, strong_actor_ptr subscriber, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				// subscribe to dispatcher events too
 				add_subscriber(subscriber, subscriber_key, event_type);
@@ -131,7 +131,7 @@ namespace dispatcher
 	void dispatcher_actor::timer_pulse(int seconds)
 	{
 		if(!timer_guard)
-			delayed_send(this, std::chrono::seconds(seconds), elevator::timer_atom::value);
+			delayed_send(this, std::chrono::seconds(seconds), timer_atom_v);
 	}
 
 	// schedule this journey, either in an existing schedule or a new one if there are none or none with capacity
@@ -215,7 +215,7 @@ namespace dispatcher
 					auto waypoints = std::move(down_schedules.front().get_waypoints_queue());
 					while (waypoints.size() > 0)
 					{
-						send(elevator_statuses[i].elevator, waypoint_atom::value, waypoints.front()->floor);
+						send(actor_cast<caf::actor>(elevator_statuses[i].elevator), waypoint_atom_v, waypoints.front()->floor);
 						elevator_statuses[i].waypoints[waypoints.front()->floor] = std::move(waypoints.front());
 						waypoints.pop();
 					}
@@ -241,7 +241,7 @@ namespace dispatcher
 					auto waypoints = std::move(up_schedules.front().get_waypoints_queue());
 					while (waypoints.size() > 0)
 					{
-						send(elevator_statuses[i].elevator, waypoint_atom::value, waypoints.front()->floor);
+						send(actor_cast<caf::actor>(elevator_statuses[i].elevator), waypoint_atom_v, waypoints.front()->floor);
 						elevator_statuses[i].waypoints[waypoints.front()->floor] = std::move(waypoints.front());
 						waypoints.pop();
 					}
@@ -259,14 +259,14 @@ namespace dispatcher
 		int s = dropoffs.size();
 		for (auto passenger : dropoffs)
 		{
-			send(passenger, disembark_atom::value, floor_number);
+			send(actor_cast<caf::actor>(passenger), disembark_atom_v, floor_number);
 		}
 
 		// pickups
 		std::vector<strong_actor_ptr>& pickups = elevator_statuses[elevator_number].waypoints[floor_number]->pickup_list;
 		for (auto passenger : pickups)
 		{
-			send(passenger, embark_atom::value, elevator_number);
+			send(actor_cast<caf::actor>(passenger), embark_atom_v, elevator_number);
 		}
 
 	}
@@ -313,7 +313,7 @@ namespace dispatcher
 		for (auto kv : debug_message_subscribers)
 		{
 			auto recipient = actor_cast<actor>(kv.second);
-			send(recipient, message_atom::value, subscriber_msg);
+			send(recipient, message_atom_v, subscriber_msg);
 		}
 
 	}

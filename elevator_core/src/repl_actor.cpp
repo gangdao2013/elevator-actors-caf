@@ -27,13 +27,13 @@ namespace elevator
 			[=](std::string prompt)
 			{
 
-				std::cout << "\n" << prompt << std::flush;
+				std::cout << "\n Input please:\n" << prompt << std::flush;
 				std::string line;
 				std::getline(std::cin, line);
 				line = string_util::trim(std::move(line)); // ignore leading and trailing whitespaces
 				std::vector<std::string> words;
 				split(words, line, is_any_of(" "), token_compress_on);
-				self->send(self->current_sender(), command_atom::value, words);
+				self->send(actor_cast<caf::actor>(self->current_sender()), command_atom_v, words);
 			}
 		};
 	}
@@ -64,7 +64,7 @@ namespace elevator
 				if (!quit)
 					send(command_actor, get_prompt());
 				else
-					send(this, quit_atom::value); // nb: eval would have sent quit to target_actor_ already
+					send(this, quit_atom_v); // nb: eval would have sent quit to target_actor_ already
 			}
 		};
 	}
@@ -81,7 +81,7 @@ namespace elevator
 		// NB: get_eval() is overriden by child classes, returns a handler specific to that repl class and target_actor
 		message_handler eval = get_eval(); 
 		// this lets the target_actor know we want (debug) messages
-		send(target_actor_, subscribe_atom::value, repl_id_, elevator_observable_event_type::debug_message); 
+		send(target_actor_, elevator_subscribe_atom_v, repl_id_, elevator_observable_event_type::debug_message);
 
 		usage(); // overridden by child class
 		command_actor = spawn(next_command_actor);
@@ -96,8 +96,13 @@ namespace elevator
 		{
 			// The .apply(eval) method evaluates eval/message_handler against the constructed message object (from the commands)
 			// It's a handy reuse of the CAF message handling & matching code for our REPL purposes.
-			if (!message_builder(command.begin(), command.end()).apply(eval)) 
+			//if (!message_builder(command.begin(), command.end()).apply(eval))
+			//	usage();
+			auto msg = message_builder(command.begin(), command.end()).move_to_message();
+			if (!eval(msg))
+			{
 				usage();
+			}
 		}
 	}
 }

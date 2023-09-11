@@ -49,7 +49,7 @@ namespace elevator
 	behavior elevator_actor::make_behavior()
 	{
 		return {
-			[=](elevator::quit_atom)
+			[=](quit_atom)
 			{
 				debug_msg("quit_atom received");
 				fsm->handle_quit(*this);
@@ -66,7 +66,7 @@ namespace elevator
 				debug_msg("register_dispatcher_atom received");
 				dispatcher = std::move(current_sender());
 			},
-			[=](elevator::waypoint_atom, int waypoint_floor)
+			[=](waypoint_atom, int waypoint_floor)
 			{
 				debug_msg("waypoint_atom received, for floor: " + std::to_string(waypoint_floor));
 				fsm->handle_waypoint_received(*this, waypoint_floor);
@@ -92,7 +92,7 @@ namespace elevator
 				debug_msg("timer_atom received");
 				return fsm->handle_timer(*this);
 			},
-			[=](subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
+			[=](elevator_subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				add_subscriber(current_sender(), subscriber_key, event_type);
 				debug_msg("subscribe_atom received");
@@ -144,7 +144,7 @@ namespace elevator
 		// use request().await() to suspend regular behavior until MM responded
 		auto mm = system().middleman().actor_handle();
 
-		request(mm, infinite, connect_atom::value, host, port)
+		request(mm, infinite, connect_atom_v, host, port)
 			.await
 			(
 				[host, port, this](const node_id&, strong_actor_ptr controller, const std::set<std::string>& ifs)
@@ -165,12 +165,12 @@ namespace elevator
 					this->controller = controller;
 					auto controller_hdl = actor_cast<actor>(controller);
 					this->monitor(controller_hdl);
-					this->send(controller, elevator::register_elevator_atom::value);
+					this->send(actor_cast<caf::actor>(controller), register_elevator_atom_v);
 					transition_to_state(elevator_fsm::idle);
 				},
 				[host, port, this](const error& err)
 				{
-					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(port) + " => " + this->system().render(err) + " <<<");
+					debug_msg(R"(>>> cannot connect to ")" + host + R"(":)" + std::to_string(port) + " => " /*+ this->system().render(err)*/ + " <<<");
 					transition_to_state(elevator_fsm::disconnected);
 				}
 				);
@@ -188,7 +188,7 @@ namespace elevator
 	void elevator_actor::on_idle()
 	{
 		if(dispatcher)
-			send(dispatcher, elevator_idle_atom::value, elevator_number, current_floor);
+			send(actor_cast<caf::actor>(dispatcher), elevator_idle_atom_v, elevator_number, current_floor);
 
 	}
 
@@ -210,13 +210,13 @@ namespace elevator
 	{
 		// let the dispatcher know we've arrived, so it can inform the passenger(s)
 		if(dispatcher)
-			send(dispatcher, elevator::waypoint_arrived_atom::value, elevator_number, current_floor);
+			send(actor_cast<caf::actor>(dispatcher), waypoint_arrived_atom_v, elevator_number, current_floor);
 	}
 
 	// timer is used to simulate travel between floors or delay at waitpoint while passenger embark/disembark
 	void elevator_actor::timer_pulse(int seconds)
 	{
-		delayed_send(this, std::chrono::seconds(seconds), elevator::timer_atom::value);
+		delayed_send(this, std::chrono::seconds(seconds), timer_atom_v);
 	}
 
 	// send debug message to all subscribers, e.g. repl
@@ -226,7 +226,7 @@ namespace elevator
 		for (auto kv : debug_message_subscribers)
 		{
 			auto recipient = actor_cast<actor>(kv.second);
-			send(recipient, message_atom::value, subscriber_msg);
+			send(recipient, message_atom_v, subscriber_msg);
 		}
 
 	}

@@ -65,7 +65,7 @@ void start_passenger(actor_system& system, const elevator::config& cfg)
 	auto passenger = system.spawn<passenger::passenger_actor>(cfg.passenger_name);
 
 	if (!cfg.host.empty() && cfg.port > 0)
-		anon_send(passenger, elevator::connect_to_controller_atom::value, cfg.host, cfg.port);
+		anon_send(passenger, connect_to_controller_atom_v, cfg.host, cfg.port);
 	else
 		std::cout << "*** no elevator controller received via config, "
 		<< R"(please use "connect <host> <port>" before trying to use the elevator)"
@@ -73,7 +73,7 @@ void start_passenger(actor_system& system, const elevator::config& cfg)
 
 	// create and start the repl
 	auto passenger_repl = system.spawn<passenger::passenger_repl_actor>(passenger, "passenger_repl_1");
-	anon_send(passenger_repl, elevator::start_atom::value);
+	anon_send(passenger_repl, start_atom_v);
 
 	auto self = scoped_actor{ system };
 	self->wait_for(passenger, passenger_repl); // will block until passenger and passenger_reply die
@@ -85,7 +85,7 @@ void start_elevator(actor_system& system, const elevator::config& cfg)
 	auto elevator = system.spawn<elevator::elevator_actor>(1);
 
 	if (!cfg.host.empty() && cfg.port > 0)
-		anon_send(elevator, elevator::connect_to_controller_atom::value, cfg.host, cfg.port);
+		anon_send(elevator, connect_to_controller_atom_v, cfg.host, cfg.port);
 	else
 		std::cout << "*** no elevator controller received via config, "
 		<< R"(please use "connect <host> <port>" before trying to use the elevator)"
@@ -93,7 +93,7 @@ void start_elevator(actor_system& system, const elevator::config& cfg)
 
 	// create and start the repl
 	auto elevator_repl = system.spawn<elevator::elevator_repl_actor>(elevator, "elevator_repl_1");
-	anon_send(elevator_repl, elevator::start_atom::value);
+	anon_send(elevator_repl, start_atom_v);
 
 	auto self = scoped_actor{ system };
 	self->wait_for(elevator, elevator_repl); // will block until elevator and elevator_repl die
@@ -109,7 +109,7 @@ void start_controller(actor_system& system, const elevator::config& cfg)
 	auto expected_port = io::publish(controller, cfg.port);
 	
 	if (!expected_port) {
-		std::cerr << ">>> publish failed: "	<< system.render(expected_port.error()) << " <<<" << std::endl;
+		std::cerr << ">>> publish failed: "	<< to_string(expected_port.error().context()) << " <<<" << std::endl;
 		return;
 	}
 	
@@ -117,7 +117,7 @@ void start_controller(actor_system& system, const elevator::config& cfg)
 
 	// create and start the repl
 	auto controller_repl = system.spawn<controller::controller_repl_actor>(controller, "controller_repl_1");
-	anon_send(controller_repl, elevator::start_atom::value);
+	anon_send(controller_repl, start_atom_v);
 
 	auto self = scoped_actor{ system };
 	self->wait_for(controller, controller_repl); // will block until controller and controller_repl die
@@ -148,4 +148,4 @@ void caf_main(actor_system& system, const elevator::config& cfg) {
 }
 
 // CAF main function, including network-enabled communications between remote actors:
-CAF_MAIN(io::middleman)
+CAF_MAIN(io::middleman, id_block::elevator_core)

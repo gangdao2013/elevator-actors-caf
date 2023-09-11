@@ -16,7 +16,7 @@ namespace controller
 	// controller_actor is the central controller/supervisor of the network of actors.
 	// elevator_actors and passenger_actors register with a controller
 
-	class controller_actor : public event_based_actor
+	class ELEVATOR_CORE_EXPORT controller_actor : public event_based_actor
 	{
 	public:
 

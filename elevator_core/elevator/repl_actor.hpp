@@ -9,7 +9,7 @@ namespace elevator
 
 	// It can be used to monitor the behaviour of an actor, as well as send it commands directly - handy for development & testing.
 
-	class repl_actor : public event_based_actor
+	class ELEVATOR_CORE_EXPORT repl_actor : public event_based_actor
 	{
 	public:
 

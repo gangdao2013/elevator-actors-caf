@@ -107,7 +107,7 @@ namespace dispatcher
 	// dispatcher_actor is the main algorithmic workhorse of the system;
 	// it receives floor calls from passengers, schedules the journeys based on capacities, and then dispatches schedules to elevators as waypoints
 
-	class dispatcher_actor : public event_based_actor
+	class ELEVATOR_CORE_EXPORT dispatcher_actor : public event_based_actor
 	{
 	public:
 

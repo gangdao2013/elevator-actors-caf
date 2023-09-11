@@ -75,20 +75,20 @@ namespace controller
 			{
 				debug_msg("register_elevator_atom received");
 				auto elevator = current_sender();
-				send(dispatcher, register_elevator_atom::value, elevator);
+				send(actor_cast<caf::actor>(dispatcher), register_elevator_atom_v, elevator);
 			},
 			[=](register_passenger_atom) 
 			{
 				debug_msg("register_passenger_atom received");
 				auto passenger = current_sender();
-				send(dispatcher, register_passenger_atom::value, passenger);
+				send(actor_cast<caf::actor>(dispatcher), register_passenger_atom_v, passenger);
 			},			
-			[=](elevator::subscribe_atom sub, std::string subscriber_key, elevator_observable_event_type event_type)
+			[=](elevator_subscribe_atom, std::string subscriber_key, elevator_observable_event_type event_type)
 			{
 				// subscribe to dispatcher events too
 				//delegate(actor_cast<actor>(dispatcher), sub, subscriber_key, event_type);
 				add_subscriber(current_sender(), subscriber_key, event_type);
-				send(dispatcher, elevator::subscribe_atom::value, current_sender(), subscriber_key, event_type);
+				send(actor_cast<caf::actor>(dispatcher), elevator_subscribe_atom_v, current_sender(), subscriber_key, event_type);
 
 				debug_msg("subscribe_atom received");
 
@@ -116,7 +116,7 @@ namespace controller
 		for (auto kv : debug_message_subscribers)
 		{
 			auto recipient = actor_cast<actor>(kv.second);
-			send(recipient, message_atom::value, subscriber_msg);
+			send(recipient, message_atom_v, subscriber_msg);
 		}
 
 	}

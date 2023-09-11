@@ -57,11 +57,11 @@ namespace elevator
 		//if (elevator_number != 0)
 		//	return elevator_number;
 
-		request(target_actor_, infinite, elevator::get_elevator_number_atom::value)
+		request(target_actor_, infinite, get_elevator_number_atom_v)
 		.await
 		(
 			[&](int number) { elevator_number = number; },
-			[&](error& err) { aout(this) << "error: " << system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; } // todo
 		);
 		return elevator_number;
 	}
@@ -69,11 +69,11 @@ namespace elevator
 	// Get current floor - used in prompt
 	int elevator_repl_actor::get_current_floor()
 	{
-		request(target_actor_, infinite, elevator::get_current_floor_atom::value)
+		request(target_actor_, infinite, get_current_floor_atom_v)
 		.await
 		(
 			[&](int floor) { elevator_floor = floor; },
-			[&](error& err) { aout(this) << "error: " << system().render(err) << std::endl; }
+			[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; } // todo
 		);
 		return elevator_floor;
 	}
@@ -82,11 +82,11 @@ namespace elevator
 	std::string elevator_repl_actor::get_current_state_name()
 	{
 
-		request(target_actor_, infinite, elevator::get_current_state_name_atom::value)
+		request(target_actor_, infinite, get_current_state_name_atom_v)
 		.await
 		(
 				[&](string name) { elevator_state = name; },
-				[&](error& err) { aout(this) << "error: " << system().render(err) << std::endl; }
+				[&](error& err) { aout(this) << "error: " << err/*this->system().render(err)*/ << std::endl; } // todo
 		);
 		return elevator_state;
 	}
@@ -101,7 +101,7 @@ namespace elevator
 				if (cmd == "quit" || cmd == "q")
 				{
 					quit = true;
-					send(target_actor_, quit_atom::value);
+					send(target_actor_, quit_atom_v);
 				}
 				else if (cmd == "help" || cmd == "h") // help
 					usage();
@@ -114,7 +114,7 @@ namespace elevator
 					auto waypoint_floor = string_util::to_integer(arg1);
 					if (waypoint_floor.has_value())
 					{
-						send(target_actor_, waypoint_atom::value, waypoint_floor.value());
+						send(target_actor_, waypoint_atom_v, waypoint_floor.value());
 					}
 				}
 			},
@@ -136,7 +136,7 @@ namespace elevator
 					else
 					{
 						std::string host = arg1;
-						send(target_actor_, connect_to_controller_atom::value, host, lport);
+						send(target_actor_, connect_to_controller_atom_v, host, lport);
 					}
 				}
 			}
