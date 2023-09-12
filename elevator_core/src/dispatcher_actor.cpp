@@ -37,6 +37,10 @@ namespace dispatcher
 				aout(this) << "dispatcher_actor: error: " << err << std::endl;
 			});
 
+		set_down_handler([=](scheduled_actor* actor, down_msg& msg) -> void
+			{
+				aout(this) << "dispatcher_actor: monited actor down. " << msg << std::endl;
+			});
 	}
 
 	// Overridden make_behaviour function - required for actor classes
